@@ -18,12 +18,16 @@ import net.artimedia.artisdk.api.AMSDKAPI;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import de.spring.mobile.Stream;
 import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
+import static com.applicaster.reshetplayer.KantarSensorKt.getKantarSensor;
 import static com.applicaster.reshetplayer.StartHere.CONF_SHOW_ADS_ON_PAYED;
 import static com.applicaster.reshetplayer.StartHere.CONF_SITE_KEY;
 
@@ -35,6 +39,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
     private Subscription positionTimer;
     private boolean adInProgress = false;
     private  boolean mAdInitialized = false; //determined if the SDK was initialized successfully
+
+    private Stream stream;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +100,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
             api.resumeAd();
         }
         Log.d(TAG, "activity onResume");
+
+
     }
 
     @Override
@@ -186,6 +194,16 @@ public class ReshetPlayer extends Player implements AMEventListener {
                         }).subscribe();
             }
         }
+
+        if (startKantarOnlyOnLive()) {
+            if(playable.isLive()) {
+                startKantarStream();
+            }
+        } else {
+            startKantarStream();
+        }
+
+
     }
 
     @Override
@@ -196,6 +214,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
         dismissTimer();
         api.updateVideoState(AMContentState.VIDEO_STATE_PAUSE);
+
+        stopKantarStream();
     }
 
     @Override
@@ -218,6 +238,25 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
             positionTimer.unsubscribe();
             Log.d(TAG, "dismissed timer");
+        }
+    }
+
+    private boolean startKantarOnlyOnLive(){
+        return true;
+    }
+
+    private void startKantarStream() {
+        Map<String, Object> atts = new HashMap<String, Object>();
+        atts.put("stream", "android/teststream"); // mandatory
+        // atts.put("cq", "4711"); // optional see implementation guideline
+        // atts.put("ct", "mobile"); // optional see implementation guideline
+        stream = getKantarSensor().track(new KantarPlayerAdapter(this), atts);
+    }
+
+    private void stopKantarStream() {
+        if(stream != null){
+            stream.stop();
+            stream = null;
         }
     }
 }

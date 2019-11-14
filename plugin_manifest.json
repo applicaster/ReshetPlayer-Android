@@ -1,0 +1,43 @@
+{
+  "api": {
+    "require_startup_execution": false,
+    "class_name": "com.applicaster.reshetplayer.StartHere"
+  },
+  "dependency_repository_url": [
+    
+  ],
+  "platform": "android",
+  "author_name": "Shay markovich",
+  "author_email": "s.markovich@applicaster.com",
+  "manifest_version": "0.1.0",
+  "name": "Reshet Player",
+  "description": "A plugin player for reshet that can display video ads from ArtiMedia and uses kantar",
+  "type": "player",
+  "identifier": "reshetplayer-android",
+  "dependency_name": "com.applicaster:ReshetPlayer",
+  "dependency_version": "0.1.+",
+  "whitelisted_account_ids": [
+    "5891b9f978f9f300171455e5"
+  ],
+  "min_zapp_sdk": "11.2.0-rc",
+  "ui_builder_support": false,
+  "deprecated_since_zapp_sdk": "",
+  "unsupported_since_zapp_sdk": "",
+  "react_native": false,
+  "custom_configuration_fields": [
+    {
+      "type": "text",
+      "key": "site_key",
+      "tooltip_text": "ArtiMedia SiteKey"
+    },
+    {
+      "type": "checkbox",
+      "key": "show_ads_on_payed",
+      "default": 0,
+      "tooltip_text": "Display ads on payed items"
+    }
+  ],
+  "targets": [
+    "mobile"
+  ]
+}

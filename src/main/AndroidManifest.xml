@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.applicaster.reshetplayer">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <supports-screens
+        android:smallScreens="false"
+        tools:replace="android:smallScreens"/>
 
     <application>
 

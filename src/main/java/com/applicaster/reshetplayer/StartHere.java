@@ -10,28 +10,47 @@ import com.applicaster.plugin_manager.playersmanager.Playable;
 import com.applicaster.plugin_manager.playersmanager.PlayableConfiguration;
 import com.applicaster.plugin_manager.playersmanager.PlayerContract;
 
+import java.util.Date;
 import java.util.Map;
 
 import static com.applicaster.player.Player.PLAYABLE_KEY;
+import static com.applicaster.reshetplayer.RemoteKt.fetchServerTime;
+import static com.applicaster.reshetplayer.helpers.COneLogicKt.isInOne;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
+import static com.applicaster.reshetplayer.helpers.ServerDeltaTimeHelperKt.getServerDeltaTime;
 
 public class StartHere extends DefaultPlayerWrapper {
-
-    static final String CONF_SITE_KEY = "site_key";
-    static final String CONF_SHOW_ADS_ON_PAYED = "show_ads_on_payed";
 
     @Override
     public void playInFullscreen(PlayableConfiguration configuration, int requestCode, Context context) {
 
         Map conf = getPluginConfigurationParams();
 
-        String siteKey = (String) conf.get(CONF_SITE_KEY);
-        boolean showAdsOnPayed = zappCheckboxToBoolean((String) conf.get(CONF_SHOW_ADS_ON_PAYED));
+        PluginParams.INSTANCE.initParams(conf);
+
+        Long videoStartTime = getVideoStartTime(getFirstPlayable());
+
+//        fetchServerTime(PluginParams.INSTANCE.getServerTimeUrl());
+        fetchServerTime("https://13tv.co.il/timestamp.php");
+
+        if(videoStartTime != null && isInOne(
+                new Date().getTime(),
+                getServerDeltaTime(),
+                videoStartTime,
+                PluginParams.INSTANCE.getC1_cut_time().getHours(),
+                PluginParams.INSTANCE.getC1_cut_time().getMinuits(),
+                PluginParams.INSTANCE.getC1_window_length_time()))
+        {
+            Playable playable = getFirstPlayable();
+            playable.setContentVideoUrl(PluginParams.INSTANCE.getLiveStreamUrl());
+
+            this.getPlayableList().clear();
+            this.getPlayableList().add(playable);
+        }
 
         Intent intent = new Intent(context, ReshetPlayer.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intent.putExtra(PLAYABLE_KEY, new Playable[]{getFirstPlayable()});
-        intent.putExtra(CONF_SITE_KEY, siteKey);
-        intent.putExtra(CONF_SHOW_ADS_ON_PAYED, showAdsOnPayed);
 
         if (requestCode != PlayerContract.NO_REQUEST_CODE && context instanceof Activity) {
             ((Activity) context).startActivityForResult(intent, requestCode);
@@ -50,5 +69,9 @@ public class StartHere extends DefaultPlayerWrapper {
 
         // handle "true"/"false"
         return Boolean.parseBoolean(value);
+    }
+
+    private void getServerDelataTime(){
+
     }
 }

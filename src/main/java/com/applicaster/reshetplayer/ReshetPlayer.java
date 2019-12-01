@@ -6,6 +6,7 @@ import android.view.View;
 
 import com.applicaster.model.APVodItem;
 import com.applicaster.player.Player;
+import com.applicaster.reshetplayer.kantar.KantarPlayerAdapter;
 import com.applicaster.util.OSUtil;
 
 import net.artimedia.artisdk.api.AMContentState;
@@ -27,9 +28,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
-import static com.applicaster.reshetplayer.KantarSensorKt.getKantarSensor;
-import static com.applicaster.reshetplayer.StartHere.CONF_SHOW_ADS_ON_PAYED;
-import static com.applicaster.reshetplayer.StartHere.CONF_SITE_KEY;
+import static com.applicaster.reshetplayer.kantar.KantarSensorKt.getKantarSensor;
 
 public class ReshetPlayer extends Player implements AMEventListener {
 
@@ -48,13 +47,13 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
         View v = findViewById(R.id.ad_video_frame);
 
-        String siteKey = getIntent().getStringExtra(CONF_SITE_KEY);
-        boolean showAdsOnPayed = getIntent().getBooleanExtra(CONF_SHOW_ADS_ON_PAYED, false);
+        String artimediaSiteName = PluginParams.INSTANCE.getArtimediaSiteName();
+        boolean showAdsOnPayed = PluginParams.INSTANCE.getShowAdsOnPayed();
 
         // prepare json object
         JSONObject params = new JSONObject();
         try {
-            params.put("siteKey", siteKey);
+            params.put("siteKey", artimediaSiteName);
             params.put("videoID", playable.getPlayableId());
             params.put("isLive", playable.isLive());
         } catch (JSONException e) {
@@ -247,9 +246,6 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     private void startKantarStream() {
         Map<String, Object> atts = new HashMap<String, Object>();
-        atts.put("stream", "android/teststream"); // mandatory
-        // atts.put("cq", "4711"); // optional see implementation guideline
-        // atts.put("ct", "mobile"); // optional see implementation guideline
         stream = getKantarSensor().track(new KantarPlayerAdapter(this), atts);
     }
 

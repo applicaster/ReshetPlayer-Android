@@ -246,6 +246,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     private void startKantarStream() {
         Map<String, Object> atts = new HashMap<String, Object>();
+        atts.put("stream", "android/teststream"); // mandatory
         stream = getKantarSensor().track(new KantarPlayerAdapter(this), atts);
     }
 

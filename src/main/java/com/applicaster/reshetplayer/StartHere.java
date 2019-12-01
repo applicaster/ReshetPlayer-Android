@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.Map;
 
 import static com.applicaster.player.Player.PLAYABLE_KEY;
-import static com.applicaster.reshetplayer.RemoteKt.fetchServerTime;
 import static com.applicaster.reshetplayer.helpers.COneLogicKt.isInOne;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
 import static com.applicaster.reshetplayer.helpers.ServerDeltaTimeHelperKt.getServerDeltaTime;
@@ -28,24 +27,25 @@ public class StartHere extends DefaultPlayerWrapper {
 
         PluginParams.INSTANCE.initParams(conf);
 
-        Long videoStartTime = getVideoStartTime(getFirstPlayable());
+//        Long videoStartTime = getVideoStartTime(getFirstPlayable());
 
 //        fetchServerTime(PluginParams.INSTANCE.getServerTimeUrl());
-        fetchServerTime("https://13tv.co.il/timestamp.php");
+//        fetchServerTime("https://13tv.co.il/timestamp.php");
 
-        if(videoStartTime != null && isInOne(
+//        getFirstPlayable().setContentVideoUrl("https://reshet-live.ctedgecdn.net/13tv-desktop/r13.m3u8?DVR?");
+
+
+        Playable playable = getFirstPlayable();
+        
+        if(getVideoStartTime(playable) != null && isInOne(
                 new Date().getTime(),
                 getServerDeltaTime(),
-                videoStartTime,
+                getVideoStartTime(playable),
                 PluginParams.INSTANCE.getC1_cut_time().getHours(),
                 PluginParams.INSTANCE.getC1_cut_time().getMinuits(),
                 PluginParams.INSTANCE.getC1_window_length_time()))
         {
-            Playable playable = getFirstPlayable();
             playable.setContentVideoUrl(PluginParams.INSTANCE.getLiveStreamUrl());
-
-            this.getPlayableList().clear();
-            this.getPlayableList().add(playable);
         }
 
         Intent intent = new Intent(context, ReshetPlayer.class);
@@ -59,19 +59,5 @@ public class StartHere extends DefaultPlayerWrapper {
         }
     }
 
-    private boolean zappCheckboxToBoolean(@Nullable String value) {
 
-        if ("0".equalsIgnoreCase(value))
-            return false;
-
-        if ("1".equalsIgnoreCase(value))
-            return true;
-
-        // handle "true"/"false"
-        return Boolean.parseBoolean(value);
-    }
-
-    private void getServerDelataTime(){
-
-    }
 }

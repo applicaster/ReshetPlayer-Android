@@ -3,11 +3,21 @@ package com.applicaster.reshetplayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.MediaController;
+import android.widget.RelativeLayout;
 
+import com.applicaster.app.APProperties;
 import com.applicaster.model.APVodItem;
 import com.applicaster.player.Player;
+import com.applicaster.player.controller.APLightFavoritesMediaController;
+import com.applicaster.player.controller.APLightMediaController;
+import com.applicaster.player.controller.APMediaController;
+import com.applicaster.player.controller.APMediaControllerI;
 import com.applicaster.reshetplayer.kantar.KantarPlayerAdapter;
+import com.applicaster.util.AppData;
 import com.applicaster.util.OSUtil;
+import com.applicaster.util.StringUtil;
 
 import net.artimedia.artisdk.api.AMContentState;
 import net.artimedia.artisdk.api.AMEventListener;
@@ -19,6 +29,7 @@ import net.artimedia.artisdk.api.AMSDKAPI;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -28,11 +39,15 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.getKantarSensor;
 
 public class ReshetPlayer extends Player implements AMEventListener {
 
     public static final String TAG = ReshetPlayer.class.getSimpleName();
+
+    private final static String IS_SEEK_TO_VIDEO_START_KEY = "is seek to video start";
 
     private AMSDKAPI api;
     private Subscription positionTimer;
@@ -41,9 +56,15 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     private Stream stream;
 
+    boolean isSeekToVideoStartTime;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(savedInstanceState != null) {
+            isSeekToVideoStartTime = savedInstanceState.getBoolean(IS_SEEK_TO_VIDEO_START_KEY);
+        }
 
         View v = findViewById(R.id.ad_video_frame);
 
@@ -55,7 +76,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
         try {
             params.put("siteKey", artimediaSiteName);
             params.put("videoID", playable.getPlayableId());
-            params.put("isLive", playable.isLive());
+            params.put("isLive", playable.isLive() || isDvr(playable));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -91,6 +112,16 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
         api.init(new AMInitParams(v, params));
     }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+
+        outState.putBoolean(IS_SEEK_TO_VIDEO_START_KEY, isSeekToVideoStartTime);
+
+        super.onSaveInstanceState(outState);
+    }
+
+
 
     @Override
     public void onResume() {
@@ -168,6 +199,11 @@ public class ReshetPlayer extends Player implements AMEventListener {
     @Override
     public void startVideo() {
 
+        if(!isSeekToVideoStartTime) {
+            seekToVideoStartTime();
+        }
+
+
         if (!adInProgress && !videoView.isPlaying()) {
             super.startVideo();
 
@@ -189,19 +225,19 @@ public class ReshetPlayer extends Player implements AMEventListener {
                             }
 
                             Log.d(TAG, "sending position: " + pos);
+                            Log.d(TAG, "sending date: " + videoView.getCurrentDate());
+                            Long currentVideoDate = videoView.getCurrentDate();
+                            Date currentVideoDateDate = new Date(currentVideoDate);
+                            Log.d(TAG, "sending position from date: " + videoView.getPositionFromDate(currentVideoDateDate));
 
                         }).subscribe();
             }
         }
 
-        if (startKantarOnlyOnLive()) {
-            if(playable.isLive()) {
-                startKantarStream();
-            }
-        } else {
+
+        if(playable.isLive() || isDvr(playable)) {
             startKantarStream();
         }
-
 
     }
 
@@ -240,8 +276,81 @@ public class ReshetPlayer extends Player implements AMEventListener {
         }
     }
 
-    private boolean startKantarOnlyOnLive(){
-        return true;
+    private void seekToVideoStartTime(){
+        Long videoStartTime = getVideoStartTime(playable);
+
+        if(videoStartTime != null){
+            Integer position = videoView.getPositionFromDate(new Date(videoStartTime));
+            videoView.seekTo(position);
+        }
+    }
+
+    APMediaControllerI mCustomMediaController;
+
+    protected void setMediaController() {
+        if (playerConfig.showNativeMediaController) {
+            Log.d("Player", "playerConfig.showNativeMediaController==true");
+            MediaController mediaController = new MediaController(this);
+            mediaController.setAnchorView(videoView);
+            videoView.setMediaController(mediaController);
+        } else {
+            Log.d("Player", "!playerConfig.showNativeMediaController");
+            if (AppData.getProperty(APProperties.MEDIA_PLAYER_CONTROLLER, DEFAULT_PLAYER_CONTROLLER).equals(LIGHT_PLAYER_CONTROLLER)) {
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                mCustomMediaController = new APLightMediaController(this, null);
+                playerContainer.addView((APLightMediaController) mCustomMediaController, params);
+            } else if (AppData.getProperty(APProperties.MEDIA_PLAYER_CONTROLLER, DEFAULT_PLAYER_CONTROLLER).equals(LIGHT_FAVORITES_PLAYER_CONTROLLER)) {
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                mCustomMediaController = new APLightFavoritesMediaController(this, null);
+                playerContainer.addView((APLightFavoritesMediaController) mCustomMediaController, params);
+            } else {
+                RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+                mCustomMediaController = new APMediaController(this, null) {
+
+                    @Override
+                    public void show() {
+                        if(isLive && isDvr(playable) == false){
+                            if(timerContainer != null){
+                                timerContainer.setVisibility(View.GONE);
+                                seekbar.setVisibility(View.GONE);
+                            }
+                            if(seekbarContainer != null){
+                                seekbarContainer.setVisibility(View.GONE);
+                                seekbar.setVisibility(View.GONE);
+                            }
+                        }
+                        else{
+                            int currentPosition = this.getCurrentPosition();
+                            int duration = player.getDuration();
+                            if(!isSocialbarEnabled){
+                                seekbarContainer.setVisibility(View.VISIBLE);
+                            }
+                            seekbar.setVisibility(View.VISIBLE);
+                            seekbar.setMax(duration);
+                            seekbar.setProgress(currentPosition);
+                            String currentTime = StringUtil.parseDuration("" + currentPosition);
+                            elapsedTime.setText(currentTime);
+                            String totalTimeStr  = StringUtil.parseDuration("" + duration);
+                            totalTime.setText(totalTimeStr);
+
+                            ((RelativeLayout.LayoutParams)seekbar.getLayoutParams()).topMargin = -1*seekbar.getThumbOffset()/2;
+                            startCurrentPositionTimer();
+                        }
+
+                        displayTopBarWithAnimation();
+
+                    }
+                };
+                playerContainer.addView((APMediaController) mCustomMediaController, params);
+            }
+            mCustomMediaController.setDefaultVisibility();
+            mCustomMediaController.setPlayer(videoView);
+            mCustomMediaController.setIsLive(playable.isLive());
+            mCustomMediaController.setPlayableItem(playable);
+            mCustomMediaController.initView();
+            setCustomMediaController(mCustomMediaController);
+        }
     }
 
     private void startKantarStream() {

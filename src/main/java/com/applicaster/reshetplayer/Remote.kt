@@ -28,16 +28,23 @@ interface ServerTimeService {
     fun time(@Url url: String): Call<ResponseBody>
 }
 
-fun fetchServerTime(serverUrl: String) {
+interface CallbackResponse{
+    fun onSucceed()
+    fun onError()
+}
+
+fun setServerDeltaTime(serverUrl: String, callback: CallbackResponse) {
     serverTimeService.time(serverUrl).enqueue(object : Callback<ResponseBody> {
         override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)
+            callback.onError()
         }
 
         override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if(response.isSuccessful){
                 setSeverDelatTime(Date().time - parseServerDate(response.body()?.string() ?: ""))
+                callback.onSucceed()
             }
         }
 

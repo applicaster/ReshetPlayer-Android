@@ -14,7 +14,7 @@ fun Playable.getVideoStartTime() : Long? {
         is APAtomEntry.APAtomEntryPlayable ->
             this.entry.getExtension(VIDEO_START_TIME_EXTENTION, Long::class.java)
         is APVodItem ->
-            this.getExtension(VIDEO_START_TIME_EXTENTION) as Long
+            this.getExtension(VIDEO_START_TIME_EXTENTION) as Long?
         else -> 0L
     }
 }

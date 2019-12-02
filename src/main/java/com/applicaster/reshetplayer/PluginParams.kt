@@ -13,6 +13,7 @@ object PluginParams {
     var serverTimeUrl: String = ""
     var playerVersion: String = "0"
     var playerName: String = "reshet player"
+    var kantarAttributeStreamValue = "android/teststream"
 
     internal val CONF_ARTIMEDIA_SITE_KEY = "artimedia_site_key"
     internal val CONF__DANTAR_SITE_KEY = "kantar_site_key"
@@ -23,6 +24,7 @@ object PluginParams {
     internal val CONF_SERVER_TIME_URL = "server_time_url"
     internal val CONF_PLAYER_VERSION = "player_version_name"
     internal val CONF_PLAYER_NAME = "player_version_name"
+    internal val CONF_KANTAR_ATRRIBUTE_STREAM_VALUE = "kantar attribute stream value"
 
     fun initParams(pluginConfiguration: MutableMap<Any?, Any?>) {
         kantarSiteName = pluginConfiguration[CONF__DANTAR_SITE_KEY].toString()
@@ -34,6 +36,7 @@ object PluginParams {
         serverTimeUrl = pluginConfiguration[CONF_SERVER_TIME_URL].toString()
         playerVersion = pluginConfiguration[CONF_PLAYER_VERSION].toString()
         playerName = pluginConfiguration[CONF_PLAYER_NAME].toString()
+        kantarAttributeStreamValue = pluginConfiguration[CONF_KANTAR_ATRRIBUTE_STREAM_VALUE].toString()
     }
 
     private fun zappCheckboxToBoolean(value: String?): Boolean {

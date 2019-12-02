@@ -10,7 +10,7 @@ fun isInOne(currentPhoneTime: Long, serverDelatTime: Long, vodStartTime: Long, c
 
     return if(isLessThenWindowLength) {
         // vod startTime
-        val date = GregorianCalendar()
+        val date = GregorianCalendar(TimeZone.getTimeZone("UTC"))
         date.time = Date(vodStartTime)
         // reset hour, minutes, seconds and millis
         date.set(Calendar.HOUR_OF_DAY, c1CatTimeHour)

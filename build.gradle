@@ -63,6 +63,9 @@ dependencies {
     }
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    testImplementation 'org.mockito:mockito-core:1.10.19'
+    testImplementation 'junit:junit:4.12'
 }
 
 //---------------------------------- Bintray ----------------------------------//

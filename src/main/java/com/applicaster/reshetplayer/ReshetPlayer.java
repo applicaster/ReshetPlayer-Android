@@ -46,6 +46,7 @@ import rx.schedulers.Schedulers;
 
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
+import static com.applicaster.reshetplayer.kantar.KantarSensorKt.KANTAR_ATTRIBUTE_STREAM_KEY;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.getKantarSensor;
 
 public class ReshetPlayer extends Player implements AMEventListener {
@@ -371,7 +372,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     private void startKantarStream() {
         Map<String, Object> atts = new HashMap<String, Object>();
-        atts.put("stream", "android/teststream"); // mandatory
+        atts.put(KANTAR_ATTRIBUTE_STREAM_KEY, PluginParams.INSTANCE.getKantarAttributeStreamValue()); // mandatory
         stream = getKantarSensor().track(new KantarPlayerAdapter(this), atts);
     }
 

@@ -19,7 +19,7 @@ val appName: String by lazy {
     }
 }
 
-
+const val KANTAR_ATTRIBUTE_STREAM_KEY = "stream"
 
 
 

@@ -10,6 +10,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Url
+import java.lang.Exception
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -43,7 +44,7 @@ fun setServerDeltaTime(serverUrl: String, callback: CallbackResponse) {
 
         override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
             if(response.isSuccessful){
-                setSeverDelatTime(Date().time - parseServerDate(response.body()?.string() ?: ""))
+                setSeverDelatTime(Date().time - (parseServerDate(response.body()?.string()) ?: Date().time))
                 callback.onSucceed()
             }
         }
@@ -53,10 +54,10 @@ fun setServerDeltaTime(serverUrl: String, callback: CallbackResponse) {
 
 val simpleDateFormatServerTime = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 
-fun parseServerDate(str: String) : Long {
+fun parseServerDate(str: String?) : Long? {
     return try {
         simpleDateFormatServerTime.parse(str).time
-    } catch (e: ParseException) {
-        0
+    } catch (e: Exception) {
+        null
     }
 }

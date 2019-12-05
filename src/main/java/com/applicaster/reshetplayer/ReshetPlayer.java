@@ -55,6 +55,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     private final static String IS_SEEK_TO_VIDEO_START_KEY = "is seek to video start";
 
+    public final static String NEED_TO_SEEK_START_TIME = "need to seek video start time";
+
     private AMSDKAPI api;
     private Subscription positionTimer;
     private boolean adInProgress = false;
@@ -205,11 +207,6 @@ public class ReshetPlayer extends Player implements AMEventListener {
     @Override
     public void startVideo() {
 
-        if(!isSeekToVideoStartTime) {
-            seekToVideoStartTime();
-            isSeekToVideoStartTime = true;
-        }
-
 
         if (!adInProgress && !videoView.isPlaying()) {
             super.startVideo();
@@ -231,13 +228,13 @@ public class ReshetPlayer extends Player implements AMEventListener {
                                 api.updateVideoTime(pos);
                             }
 
-                            Log.d(TAG, "sending position: " + pos);
-                            Log.d(TAG, "sending date: " + videoView.getCurrentDate());
-                            Long currentVideoDate = videoView.getCurrentDate();
-                            if(currentVideoDate != null){
-                                Date currentVideoDateDate = new Date(currentVideoDate);
-                                Log.d(TAG, "sending position from date: " + videoView.getPositionFromDate(currentVideoDateDate));
-                            }
+//                            Log.d(TAG, "sending position: " + pos);
+//                            Log.d(TAG, "sending date: " + videoView.getCurrentDate());
+//                            Long currentVideoDate = videoView.getCurrentDate();
+//                            if(currentVideoDate != null){
+//                                Date currentVideoDateDate = new Date(currentVideoDate);
+//                                Log.d(TAG, "sending position from date: " + videoView.getPositionFromDate(currentVideoDateDate));
+//                            }
                         }).subscribe();
             }
         }
@@ -284,12 +281,22 @@ public class ReshetPlayer extends Player implements AMEventListener {
         }
     }
 
+    private boolean isSeekToVideoStartTimeNeeded(){
+        return getIntent().getBooleanExtra(NEED_TO_SEEK_START_TIME, false);
+    }
+
     private void seekToVideoStartTime(){
         Long videoStartTime = getVideoStartTime(playable);
 
         if(videoStartTime != null){
             Integer position = videoView.getPositionFromDate(new Date(videoStartTime));
-            videoView.seekTo(position);
+            if(position != null){
+                Log.d(TAG, "seeking to " + position);
+                videoView.seekTo(position);
+                videoCurrentPosition = position;
+            } else {
+                Log.d(TAG, "seekToVideoStartTime: return null");
+            }
         }
     }
 
@@ -358,6 +365,18 @@ public class ReshetPlayer extends Player implements AMEventListener {
             mCustomMediaController.setPlayableItem(playable);
             mCustomMediaController.initView();
             setCustomMediaController(mCustomMediaController);
+        }
+    }
+
+    @Override
+    protected void finalizeOnPrepare(boolean isPreroll) {
+        super.finalizeOnPrepare(isPreroll);
+
+        Log.d(TAG, "finalizeOnPrepare: ");
+
+        if(!isSeekToVideoStartTime && isSeekToVideoStartTimeNeeded()) {
+            seekToVideoStartTime();
+            isSeekToVideoStartTime = true;
         }
     }
 

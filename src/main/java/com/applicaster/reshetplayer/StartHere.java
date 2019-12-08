@@ -3,13 +3,20 @@ package com.applicaster.reshetplayer;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.ContextCompat;
+import android.view.View;
 
+import com.applicaster.analytics.AnalyticsAgentUtil;
 import com.applicaster.player.defaultplayer.DefaultPlayerWrapper;
+import com.applicaster.player.defaultplayer.gmf.GmfPlayer;
+import com.applicaster.player.defaultplayer.gmf.layeredvideo.PlaybackControlLayer;
 import com.applicaster.plugin_manager.hook.ApplicationLoaderHookUpI;
 import com.applicaster.plugin_manager.hook.HookListener;
 import com.applicaster.plugin_manager.playersmanager.Playable;
 import com.applicaster.plugin_manager.playersmanager.PlayableConfiguration;
 import com.applicaster.plugin_manager.playersmanager.PlayerContract;
+import com.applicaster.util.UrlSchemeUtil;
+import com.applicaster.util.ui.ShareDialog;
 
 import java.util.Date;
 import java.util.Map;
@@ -57,6 +64,73 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         }
     }
 
+    @Override
+    public void playInline(PlayableConfiguration configuration) {
+        this.configuration = configuration;
+
+        Playable playable = getFirstPlayable();
+
+        playable.setContentVideoUrl("https://reshet-live.ctedgecdn.net/13tv-desktop/r13.m3u8?DVR=true");
+
+        // trying to parse ads from playable extension if it is possible
+        playable = parseAdsFromPlayableIfPossible(playable);
+
+        if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
+            this.setPlaybackPosition(configuration);
+        }
+        else {
+            mCurrentPlayable = playable;
+            setPlayerState(State.LoadingPlayable);
+            loadPlayable();
+        }
+    }
+
+    @Override
+    protected void setupPlayer() {
+       
+        setPlayerState(State.Playing);
+
+        if (mGmfPlayer != null) {
+            mGmfPlayer.release();
+        }
+
+
+        mGmfPlayer = new GmfPlayer((Activity) getContext(), mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);
+        mGmfPlayer.setFullscreenCallback(new PlaybackControlLayer.FullscreenCallback() {
+            @Override
+            public void onGoToFullscreen(int currPosition) {
+                StartHere.this.playInFullscreen(configuration, 0, getContext());
+            }
+
+            @Override
+            public void onReturnFromFullscreen(boolean isVideoEnded) {
+                if(isVideoEnded)
+                    removeInline(videoContainerView);
+            }
+        });
+
+        mGmfPlayer.addActionButton(
+                ContextCompat.getDrawable(getContext(), com.applicaster.R.drawable.ic_action_share),
+                "Share",
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if (mGmfPlayer != null)
+                            mGmfPlayer.pause();
+                        // TODO switch to: GenericShareUtils.shareNative(context, holder, analyticName, extraAnalyticsParam);
+                        ShareDialog.showCaptureVideoShareDialog((Activity) getContext(), getFirstPlayable().getPublicPageURL() + "?" + UrlSchemeUtil.addSnippestParams(0, 0), getFirstPlayable().getPlayableName(), null);
+                    }
+                }
+        );
+        mGmfPlayer.start();
+        mVideoCellView.setStreamPlayer(mGmfPlayer);
+        mVideoCellView.setPlayerContract(this);
+
+        Map<String, String> params = mCurrentPlayable.getAnalyticsParams();
+        params.put(AnalyticsAgentUtil.VIEW,AnalyticsAgentUtil.INLINE_PLAYER);
+        AnalyticsAgentUtil.logTimedEvent(mCurrentPlayable.isLive() ? AnalyticsAgentUtil.PLAY_CHANNEL : AnalyticsAgentUtil.PLAY_VOD_ITEM, params);
+        this.setPlaybackPosition(configuration);
+    }
 
     @Override
     public void executeOnApplicationReady(Context context, HookListener listener) {
@@ -76,6 +150,8 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
             }
         });
     }
+
+
 
     @Override
     public void executeOnStartup(Context context, HookListener listener) {

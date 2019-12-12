@@ -70,7 +70,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
         Playable playable = getFirstPlayable();
 
-        playable.setContentVideoUrl("https://reshet-live.ctedgecdn.net/13tv-desktop/r13.m3u8?DVR=true");
+//        playable.setContentVideoUrl("https://reshet-live.ctedgecdn.net/13tv-desktop/r13.m3u8?DVR=true");
 
         // trying to parse ads from playable extension if it is possible
         playable = parseAdsFromPlayableIfPossible(playable);

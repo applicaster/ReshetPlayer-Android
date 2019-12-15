@@ -6,7 +6,7 @@ import com.applicaster.plugin_manager.playersmanager.Playable
 import com.applicaster.reshetplayer.parseServerDate
 
 const val VIDEO_START_TIME_EXTENTION = "video_start_time"
-const val DVR_IDENTIFIER = "DVR"
+const val DVR_IDENTIFIER = "dvr=true"
 
 fun Playable.getVideoStartTime() : Long? {
 
@@ -30,4 +30,4 @@ fun Playable.setVideoStartTime(startTime: Long) {
     }
 }
 
-fun Playable.isDvr() = this.contentVideoURL.contains(DVR_IDENTIFIER)
+fun Playable.isDvr() = this.contentVideoURL.contains(DVR_IDENTIFIER, ignoreCase = true)

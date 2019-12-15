@@ -54,12 +54,17 @@ dependencies {
     api 'com.applicaster:artimedia:1.1.12@aar'
     api 'com.applicaster:kantarmedia-streaming-android-barb:1.5.1@aar'
 
+    implementation ("com.applicaster:ApplicasterVideoPlayer-Android:0.1.0") {
+        exclude group:    'com.applicaster', module: 'applicaster-android-sdk'
+        exclude group:    'com.applicaster', module: 'zapp-root-android'
+    }
+
     // Check if an open SDK is defined - if not use the closed one.
     def devSDK = findProject(':applicaster-android-sdk')
     if (devSDK != null) {
         implementation project(':applicaster-android-sdk')
     } else {
-        implementation 'com.applicaster:applicaster-android-sdk:4.2.6'
+        implementation 'com.applicaster:applicaster-android-sdk:4.2.7'
     }
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

@@ -14,7 +14,7 @@
         android:tag="@string/fb_chat_container"
         android:visibility="gone">
 
-        <com.applicaster.util.ui.APVideoViewWrapper
+        <com.applicaster.reshetplayer.APVideoViewWrapperReshet
             android:id="@+id/video_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

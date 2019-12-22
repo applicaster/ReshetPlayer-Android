@@ -54,7 +54,7 @@ import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.KANTAR_ATTRIBUTE_STREAM_KEY;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.getKantarSensor;
 
-public class ReshetPlayer extends Player implements AMEventListener,CallbackResponseOVidius {
+public class ReshetPlayer extends Player implements AMEventListener {
 
     public static final String TAG = ReshetPlayer.class.getSimpleName();
 
@@ -140,7 +140,21 @@ public class ReshetPlayer extends Player implements AMEventListener,CallbackResp
         this.playable = loadedPlayable;
         String videoId = getVideoId(this.playable);
 //        if (videoId != null && videoId != "") {
-        getVideoSrc("yummies-games-of-chef-season-03-articles-ep20-hazaza-03", this);
+        getVideoSrc("yummies-games-of-chef-season-03-articles-ep20-hazaza-03", new CallbackResponseOVidius() {
+            @Override
+            public void onSucceed(@NotNull String result) {
+                ((APAtomEntry.APAtomEntryPlayable) playable).getEntry().getContent().src = result;
+                playable.setContentVideoUrl(result);
+                streamUrl = playable.getContentVideoURL();
+                // Start a login process in case there's a login plugin present
+                processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        });
 //        }
 //        streamUrl = playable.getContentVideoURL();
 //
@@ -417,19 +431,5 @@ public class ReshetPlayer extends Player implements AMEventListener,CallbackResp
             stream.stop();
             stream = null;
         }
-    }
-
-    @Override
-    public void onSucceed(@NotNull String result) {
-        ((APAtomEntry.APAtomEntryPlayable) playable).getEntry().getContent().src = result;
-        playable.setContentVideoUrl(result);
-        streamUrl = playable.getContentVideoURL();
-        // Start a login process in case there's a login plugin present
-        processPaidItems(playable, videoView, this, storeFrontHandler);
-    }
-
-    @Override
-    public void onError() {
-
     }
 }

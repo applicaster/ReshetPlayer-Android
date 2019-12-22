@@ -10,6 +10,7 @@ import android.widget.RelativeLayout;
 
 import com.applicaster.analytics.AnalyticsAgentUtil;
 import com.applicaster.app.APProperties;
+import com.applicaster.atom.model.APAtomEntry;
 import com.applicaster.model.APVodItem;
 import com.applicaster.player.Player;
 import com.applicaster.player.controller.APLightFavoritesMediaController;
@@ -18,6 +19,7 @@ import com.applicaster.player.controller.APMediaController;
 import com.applicaster.player.controller.APMediaControllerI;
 import com.applicaster.player.controller.APSocialBarData;
 import com.applicaster.player.wrappers.PlayerViewWrapper;
+import com.applicaster.plugin_manager.playersmanager.Playable;
 import com.applicaster.reshetplayer.kantar.KantarPlayerAdapter;
 import com.applicaster.util.AppData;
 import com.applicaster.util.OSUtil;
@@ -31,6 +33,7 @@ import net.artimedia.artisdk.api.AMInitParams;
 import net.artimedia.artisdk.api.AMSDK;
 import net.artimedia.artisdk.api.AMSDKAPI;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,12 +47,14 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
+import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoId;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.KANTAR_ATTRIBUTE_STREAM_KEY;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.getKantarSensor;
 
-public class ReshetPlayer extends Player implements AMEventListener {
+public class ReshetPlayer extends Player implements AMEventListener,CallbackResponseOVidius {
 
     public static final String TAG = ReshetPlayer.class.getSimpleName();
 
@@ -129,7 +134,19 @@ public class ReshetPlayer extends Player implements AMEventListener {
         super.onSaveInstanceState(outState);
     }
 
-
+    @Override
+    public void onItemLoaded(Playable loadedPlayable) {
+        // replace our local playable with the loaded one.
+        this.playable = loadedPlayable;
+        String videoId = getVideoId(this.playable);
+//        if (videoId != null && videoId != "") {
+        getVideoSrc("yummies-games-of-chef-season-03-articles-ep20-hazaza-03", this);
+//        }
+//        streamUrl = playable.getContentVideoURL();
+//
+//        // Start a login process in case there's a login plugin present
+//        processPaidItems(playable, videoView, this, storeFrontHandler);
+    }
 
     @Override
     public void onResume() {
@@ -400,5 +417,19 @@ public class ReshetPlayer extends Player implements AMEventListener {
             stream.stop();
             stream = null;
         }
+    }
+
+    @Override
+    public void onSucceed(@NotNull String result) {
+        ((APAtomEntry.APAtomEntryPlayable) playable).getEntry().getContent().src = result;
+        playable.setContentVideoUrl(result);
+        streamUrl = playable.getContentVideoURL();
+        // Start a login process in case there's a login plugin present
+        processPaidItems(playable, videoView, this, storeFrontHandler);
+    }
+
+    @Override
+    public void onError() {
+
     }
 }

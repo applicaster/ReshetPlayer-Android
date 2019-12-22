@@ -19,6 +19,8 @@ fun Playable.getVideoStartTime() : Long? {
     }
 }
 
+fun Playable.getVideoId() : String? = try { (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["video_id"] as String} catch (e:Exception){ "" }
+
 fun Playable.setVideoStartTime(startTime: Long) {
     when (this){
         is APAtomEntry.APAtomEntryPlayable ->

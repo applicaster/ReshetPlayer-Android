@@ -13,7 +13,7 @@ object PluginParams {
     var playerName: String = "reshet player"
     var kantarAttributeStreamValue = "android/teststream"
     var ovidiusUrl = "https://13tv-api.oplayer.io/"
-    var ovidiusUserID = "1234"
+    var ovidiusUserID = "45E4A9FB-FCE8-88BF-93CC-3650C39DDF28"
 
     internal val CONF_ARTIMEDIA_SITE_KEY = "artimedia_site_key"
     internal val CONF__DANTAR_SITE_KEY = "kantar_site_key"
@@ -39,8 +39,8 @@ object PluginParams {
         playerVersion = pluginConfiguration[CONF_KANTAR_PLAYER_VERSION].toString()
         playerName = pluginConfiguration[CONF_KANTAR_PLAYER_NAME].toString()
         kantarAttributeStreamValue = pluginConfiguration[CONF_KANTAR_ATRRIBUTE_STREAM_VALUE].toString()
-        ovidiusUrl = pluginConfiguration[CONF_OVIDIUS_URL].toString()
-        ovidiusUserID = pluginConfiguration[CONF_OVIDIUS_USER_ID].toString()
+//        ovidiusUrl = pluginConfiguration[CONF_OVIDIUS_URL].toString()
+//        ovidiusUserID = pluginConfiguration[CONF_OVIDIUS_USER_ID].toString()
     }
 
     private fun zappCheckboxToBoolean(value: String?): Boolean {

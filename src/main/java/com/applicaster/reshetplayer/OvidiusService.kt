@@ -36,7 +36,7 @@ interface OVidiusService {
     @GET("api/getlink/getVideoByFileName")
     fun getVideoByName(
             @Query("userId") userId: String,
-            @Query("fileName") fileName: String,
+            @Query("videoName") fileName: String,
             @Query("serverType") serverType: ServerType
     ): Call<List<OvidousModel>>
 
@@ -106,8 +106,8 @@ interface CallbackResponseOVidius{
     fun onError()
 }
 
-fun getVideoSrc(videoId: String, callback: CallbackResponseOVidius) {
-    mOVidiusService.getVideoById(getUserID(), videoId, getServerType()).enqueue(object : Callback<List<OvidousModel>> {
+fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
+    mOVidiusService.getVideoByName(getUserID(), videoName, getServerType()).enqueue(object : Callback<List<OvidousModel>> {
         override fun onFailure(call: Call<List<OvidousModel>>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)
@@ -164,8 +164,9 @@ fun getCdnName() = ""
 fun getChanelName() = ""
 
 fun getSrcFromOvidousModel(model: OvidousModel) : String{
-    val fileNameArray = model.mediaFile.split(".")
-    val extendFileName = fileNameArray.first() + model.bitretes + fileNameArray.last()
+    val fileNameArray = model.mediaFile.substringBeforeLast(".")
+    val fileEnding = "." + model.mediaFile.substringAfterLast(".")
+    val extendFileName = fileNameArray + model.bitretes + fileEnding
     return model.protocolType + model.serverAddress + model.mediaRoot + extendFileName + model.streamingType + model.token
 }
 

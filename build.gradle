@@ -51,7 +51,7 @@ repositories {
 
 dependencies {
 
-    api 'com.applicaster:artimedia:1.1.12@aar'
+    api 'com.applicaster:artimedia:1.4.1@aar'
     api 'com.applicaster:kantarmedia-streaming-android-barb:1.5.1@aar'
 
     implementation ("com.applicaster:ApplicasterVideoPlayer-Android:0.1.0") {

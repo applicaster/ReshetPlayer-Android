@@ -137,7 +137,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     public void onItemLoaded(Playable loadedPlayable) {
         // replace our local playable with the loaded one.
         this.playable = loadedPlayable;
-        if (isDvr(playable) && !playable.isLive()) {
+        if (!isDvr(playable)) {
             String videoId = playable.getPlayableId();
             if (videoId != null && !videoId.isEmpty()) {
                 getVideoSrc(videoId, new CallbackResponseOVidius() {

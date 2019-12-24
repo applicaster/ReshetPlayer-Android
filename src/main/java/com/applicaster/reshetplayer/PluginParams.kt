@@ -39,8 +39,8 @@ object PluginParams {
         playerVersion = pluginConfiguration[CONF_KANTAR_PLAYER_VERSION].toString()
         playerName = pluginConfiguration[CONF_KANTAR_PLAYER_NAME].toString()
         kantarAttributeStreamValue = pluginConfiguration[CONF_KANTAR_ATRRIBUTE_STREAM_VALUE].toString()
-//        ovidiusUrl = pluginConfiguration[CONF_OVIDIUS_URL].toString()
-//        ovidiusUserID = pluginConfiguration[CONF_OVIDIUS_USER_ID].toString()
+        ovidiusUrl = pluginConfiguration[CONF_OVIDIUS_URL].toString()
+        ovidiusUserID = pluginConfiguration[CONF_OVIDIUS_USER_ID].toString()
     }
 
     private fun zappCheckboxToBoolean(value: String?): Boolean {

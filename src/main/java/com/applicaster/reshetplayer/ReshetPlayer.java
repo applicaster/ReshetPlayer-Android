@@ -48,7 +48,6 @@ import rx.Subscription;
 import rx.schedulers.Schedulers;
 
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
-import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoId;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.KANTAR_ATTRIBUTE_STREAM_KEY;
@@ -65,7 +64,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     private AMSDKAPI api;
     private Subscription positionTimer;
     private boolean adInProgress = false;
-    private  boolean mAdInitialized = false; //determined if the SDK was initialized successfully
+    private boolean mAdInitialized = false; //determined if the SDK was initialized successfully
 
     private Stream stream;
 
@@ -75,7 +74,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             isSeekToVideoStartTime = savedInstanceState.getBoolean(IS_SEEK_TO_VIDEO_START_KEY);
         }
 
@@ -138,34 +137,36 @@ public class ReshetPlayer extends Player implements AMEventListener {
     public void onItemLoaded(Playable loadedPlayable) {
         // replace our local playable with the loaded one.
         this.playable = loadedPlayable;
-        String videoId = getVideoId(this.playable);
-//        if (videoId != null && videoId != "") {
-        getVideoSrc("yummies-games-of-chef-season-03-articles-ep20-hazaza-03", new CallbackResponseOVidius() {
-            @Override
-            public void onSucceed(@NotNull String result) {
-                ((APAtomEntry.APAtomEntryPlayable) playable).getEntry().getContent().src = result;
-                playable.setContentVideoUrl(result);
-                streamUrl = playable.getContentVideoURL();
-                // Start a login process in case there's a login plugin present
-                processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
-            }
+        if (isDvr(playable) && !playable.isLive()) {
+            String videoId = playable.getPlayableId();
+            if (videoId != null && !videoId.isEmpty()) {
+                getVideoSrc(videoId, new CallbackResponseOVidius() {
+                    @Override
+                    public void onSucceed(@NotNull String result) {
+                        ((APAtomEntry.APAtomEntryPlayable) playable).getEntry().getContent().src = result;
+                        playable.setContentVideoUrl(result);
+                        streamUrl = playable.getContentVideoURL();
+                        // Start a login process in case there's a login plugin present
+                        processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
+                    }
 
-            @Override
-            public void onError() {
+                    @Override
+                    public void onError() {
 
+                    }
+                });
             }
-        });
-//        }
-//        streamUrl = playable.getContentVideoURL();
-//
-//        // Start a login process in case there's a login plugin present
-//        processPaidItems(playable, videoView, this, storeFrontHandler);
+        } else {
+            streamUrl = playable.getContentVideoURL();
+            processPaidItems(playable, videoView, this, storeFrontHandler);
+        }
+
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if( api != null && adInProgress) {
+        if (api != null && adInProgress) {
             api.resumeAd();
         }
         Log.d(TAG, "activity onResume");
@@ -176,7 +177,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     @Override
     public void onPause() {
         super.onPause();
-        if(api != null && adInProgress) {
+        if (api != null && adInProgress) {
             api.pauseAd();
         }
         Log.d(TAG, "activity onPause");
@@ -186,7 +187,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     public void onDestroy() {
         super.onDestroy();
         dismissTimer();
-        if(api != null) {
+        if (api != null) {
             api.destroy();
         }
 
@@ -244,7 +245,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
             Log.d(TAG, "starting video");
 
-            if (mAdInitialized && api != null && ( positionTimer == null || positionTimer.isUnsubscribed())) {
+            if (mAdInitialized && api != null && (positionTimer == null || positionTimer.isUnsubscribed())) {
 
                 api.updateVideoState(AMContentState.VIDEO_STATE_PLAY);
 
@@ -271,7 +272,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
         }
 
 
-        if(playable.isLive() || isDvr(playable)) {
+        if (playable.isLive() || isDvr(playable)) {
             startKantarStream();
         }
 
@@ -312,16 +313,16 @@ public class ReshetPlayer extends Player implements AMEventListener {
         }
     }
 
-    private boolean isSeekToVideoStartTimeNeeded(){
+    private boolean isSeekToVideoStartTimeNeeded() {
         return getIntent().getBooleanExtra(NEED_TO_SEEK_START_TIME, false);
     }
 
-    private void seekToVideoStartTime(){
+    private void seekToVideoStartTime() {
         Long videoStartTime = getVideoStartTime(playable);
 
-        if(videoStartTime != null){
+        if (videoStartTime != null) {
             Integer position = videoView.getPositionFromDate(new Date(videoStartTime));
-            if(position != null){
+            if (position != null) {
                 Log.d(TAG, "seeking to " + position);
                 videoView.seekTo(position);
                 videoCurrentPosition = position;
@@ -356,20 +357,19 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
                     @Override
                     public void show() {
-                        if(isLive && isDvr(playable) == false){
-                            if(timerContainer != null){
+                        if (isLive && isDvr(playable) == false) {
+                            if (timerContainer != null) {
                                 timerContainer.setVisibility(View.GONE);
                                 seekbar.setVisibility(View.GONE);
                             }
-                            if(seekbarContainer != null){
+                            if (seekbarContainer != null) {
                                 seekbarContainer.setVisibility(View.GONE);
                                 seekbar.setVisibility(View.GONE);
                             }
-                        }
-                        else{
+                        } else {
                             int currentPosition = this.getCurrentPosition();
                             int duration = player.getDuration();
-                            if(!isSocialbarEnabled){
+                            if (!isSocialbarEnabled) {
                                 seekbarContainer.setVisibility(View.VISIBLE);
                             }
                             seekbar.setVisibility(View.VISIBLE);
@@ -377,10 +377,10 @@ public class ReshetPlayer extends Player implements AMEventListener {
                             seekbar.setProgress(currentPosition);
                             String currentTime = StringUtil.parseDuration("" + currentPosition);
                             elapsedTime.setText(currentTime);
-                            String totalTimeStr  = StringUtil.parseDuration("" + duration);
+                            String totalTimeStr = StringUtil.parseDuration("" + duration);
                             totalTime.setText(totalTimeStr);
 
-                            ((RelativeLayout.LayoutParams)seekbar.getLayoutParams()).topMargin = -1*seekbar.getThumbOffset()/2;
+                            ((RelativeLayout.LayoutParams) seekbar.getLayoutParams()).topMargin = -1 * seekbar.getThumbOffset() / 2;
                             startCurrentPositionTimer();
                         }
 
@@ -405,7 +405,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
         Log.d(TAG, "finalizeOnPrepare: ");
 
-        if(!isSeekToVideoStartTime && isSeekToVideoStartTimeNeeded()) {
+        if (!isSeekToVideoStartTime && isSeekToVideoStartTimeNeeded()) {
             seekToVideoStartTime();
             isSeekToVideoStartTime = true;
         }
@@ -427,7 +427,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     }
 
     private void stopKantarStream() {
-        if(stream != null){
+        if (stream != null) {
             stream.stop();
             stream = null;
         }

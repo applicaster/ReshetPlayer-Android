@@ -177,11 +177,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                     Log.e("onError",e);
                 }
             });
-
-//            streamUrl = playable.getContentVideoURL();
-//            processPaidItems(playable, videoView, this, storeFrontHandler);
         }
-
     }
 
     @Override

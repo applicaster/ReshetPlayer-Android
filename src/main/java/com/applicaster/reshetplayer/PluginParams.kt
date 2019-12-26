@@ -12,6 +12,10 @@ object PluginParams {
     var playerVersion: String = "0"
     var playerName: String = "reshet player"
     var kantarAttributeStreamValue = "android/teststream"
+    var ovidiusUrl = "https://13tv-api.oplayer.io/"
+    var ovidiusUserID = "45E4A9FB-FCE8-88BF-93CC-3650C39DDF28"
+    var ovidiusLiveCdnName = "casttime"
+    var ovidiusLiveCh = "1"
 
     internal val CONF_ARTIMEDIA_SITE_KEY = "artimedia_site_key"
     internal val CONF__DANTAR_SITE_KEY = "kantar_site_key"
@@ -23,18 +27,26 @@ object PluginParams {
     internal val CONF_KANTAR_PLAYER_VERSION = "kantar_player_version"
     internal val CONF_KANTAR_PLAYER_NAME = "kantar_player_name"
     internal val CONF_KANTAR_ATRRIBUTE_STREAM_VALUE = "kantar_attribute_stream_value"
+    internal val CONF_OVIDIUS_URL= "ovidius_url"
+    internal val CONF_OVIDIUS_USER_ID= "ovidius_user_ID"
+    internal val CONF_OVIDIUS_CDN_NAME= "ovidius_cdn_name"
+    internal val CONF_OVIDIUS_CH= "ovidius_ch"
 
     fun initParams(pluginConfiguration: MutableMap<Any?, Any?>) {
-        kantarSiteName = pluginConfiguration[CONF__DANTAR_SITE_KEY].toString()
-        artimediaSiteName = pluginConfiguration[CONF_ARTIMEDIA_SITE_KEY].toString()
+        kantarSiteName = pluginConfiguration[CONF__DANTAR_SITE_KEY]?.toString() ?: kantarSiteName
+        artimediaSiteName = pluginConfiguration[CONF_ARTIMEDIA_SITE_KEY]?.toString() ?: artimediaSiteName
         showAdsOnPayed = zappCheckboxToBoolean(pluginConfiguration.get(CONF_SHOW_ADS_ON_PAYED).toString())
-        liveStreamUrl = pluginConfiguration[CONF_LIVE_STREAM_URL].toString()
-        c1_cut_time = parseTime(pluginConfiguration[CONF_C1_CUT_TIME].toString())
-        c1_window_length_time = pluginConfiguration[CONF_C1_WINDOW_LENGTH_TIME].toString().toIntOrNull() ?: 36
-        serverTimeUrl = pluginConfiguration[CONF_SERVER_TIME_URL].toString()
-        playerVersion = pluginConfiguration[CONF_KANTAR_PLAYER_VERSION].toString()
-        playerName = pluginConfiguration[CONF_KANTAR_PLAYER_NAME].toString()
-        kantarAttributeStreamValue = pluginConfiguration[CONF_KANTAR_ATRRIBUTE_STREAM_VALUE].toString()
+        liveStreamUrl = pluginConfiguration[CONF_LIVE_STREAM_URL]?.toString() ?: liveStreamUrl
+        c1_cut_time = parseTime(pluginConfiguration[CONF_C1_CUT_TIME]?.toString() ?: "00:00")
+        c1_window_length_time = pluginConfiguration[CONF_C1_WINDOW_LENGTH_TIME]?.toString()?.toIntOrNull() ?: c1_window_length_time
+        serverTimeUrl = pluginConfiguration[CONF_SERVER_TIME_URL]?.toString() ?: serverTimeUrl
+        playerVersion = pluginConfiguration[CONF_KANTAR_PLAYER_VERSION]?.toString() ?: playerVersion
+        playerName = pluginConfiguration[CONF_KANTAR_PLAYER_NAME]?.toString() ?: playerName
+        kantarAttributeStreamValue = pluginConfiguration[CONF_KANTAR_ATRRIBUTE_STREAM_VALUE]?.toString() ?: kantarAttributeStreamValue
+        ovidiusUrl = pluginConfiguration[CONF_OVIDIUS_URL]?.toString() ?: ovidiusUrl
+        ovidiusUserID = pluginConfiguration[CONF_OVIDIUS_USER_ID]?.toString() ?: ovidiusUserID
+        ovidiusLiveCdnName = pluginConfiguration[CONF_OVIDIUS_CDN_NAME]?.toString() ?: ovidiusLiveCdnName
+        ovidiusLiveCh = pluginConfiguration[CONF_OVIDIUS_CH]?.toString() ?: ovidiusLiveCh
     }
 
     private fun zappCheckboxToBoolean(value: String?): Boolean {

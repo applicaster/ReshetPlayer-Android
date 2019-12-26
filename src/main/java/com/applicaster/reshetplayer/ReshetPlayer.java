@@ -321,7 +321,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
 
         if (playable.isLive() || isDvr(playable)) {
-            startKantarStream();
+//            startKantarStream(); Todo add when reshet ask to
         }
 
     }
@@ -335,7 +335,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
         dismissTimer();
         api.updateVideoState(AMContentState.VIDEO_STATE_PAUSE);
 
-        stopKantarStream();
+//        stopKantarStream(); Todo add when reshet ask to
     }
 
     @Override

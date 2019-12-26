@@ -51,17 +51,17 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         Playable playable = getFirstPlayable();
 
         boolean shouldSeeKToVideoStartDate = false;
-        if(getVideoStartTime(playable) != null && isInOne(
-                new Date().getTime(),
-                getServerDeltaTime(),
-                getVideoStartTime(playable),
-                PluginParams.INSTANCE.getC1_cut_time().getHours(),
-                PluginParams.INSTANCE.getC1_cut_time().getMinuits(),
-                PluginParams.INSTANCE.getC1_window_length_time()))
-        {
-            playable.setContentVideoUrl(PluginParams.INSTANCE.getLiveStreamUrl());
-            shouldSeeKToVideoStartDate = true;
-        }
+//        if(getVideoStartTime(playable) != null && isInOne( Todo add when reshet ask to
+//                new Date().getTime(),
+//                getServerDeltaTime(),
+//                getVideoStartTime(playable),
+//                PluginParams.INSTANCE.getC1_cut_time().getHours(),
+//                PluginParams.INSTANCE.getC1_cut_time().getMinuits(),
+//                PluginParams.INSTANCE.getC1_window_length_time()))
+//        {
+//            playable.setContentVideoUrl(PluginParams.INSTANCE.getLiveStreamUrl());
+//            shouldSeeKToVideoStartDate = true;
+//        }
 
         Intent intent = new Intent(context, ReshetPlayer.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);

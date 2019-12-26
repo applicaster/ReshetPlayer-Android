@@ -14,6 +14,8 @@ object PluginParams {
     var kantarAttributeStreamValue = "android/teststream"
     var ovidiusUrl = "https://13tv-api.oplayer.io/"
     var ovidiusUserID = "45E4A9FB-FCE8-88BF-93CC-3650C39DDF28"
+    var ovidiusCdnName = "casttime"
+    var ovidiusCh = "26"
 
     internal val CONF_ARTIMEDIA_SITE_KEY = "artimedia_site_key"
     internal val CONF__DANTAR_SITE_KEY = "kantar_site_key"

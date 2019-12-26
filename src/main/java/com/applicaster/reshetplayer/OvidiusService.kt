@@ -1,6 +1,7 @@
 package com.applicaster.reshetplayer
 
 import android.util.Log
+import com.applicaster.reshetplayer.helpers.DVR_IDENTIFIER
 import com.applicaster.util.OSUtil
 import com.google.gson.annotations.SerializedName
 import retrofit2.Call
@@ -46,8 +47,14 @@ interface OVidiusService {
             @Query("cdnName") cdnName: String,
             @Query("ch") chanelName: String,
             @Query("serverType") serverType: ServerType
-    ): Call<List<OvidousModel>>
+    ): Call<List<OvidiousLiveModel>>
 }
+
+data class OvidiousLiveModel(
+        @SerializedName("Link") val link:String,
+        @SerializedName("CdnName") val cdnName:String,
+        @SerializedName("SocketLiveAddress") val socketLiveAddress:String
+)
 
 
 data class OvidousModel(
@@ -130,19 +137,17 @@ fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
 }
 
 fun getLiveSrc(callback: CallbackResponseOVidius) {
-    mOVidiusService.getLink(getUserID(), getCdnName(), getChanelName(),  getServerType()).enqueue(object : Callback<List<OvidousModel>> {
-        override fun onFailure(call: Call<List<OvidousModel>>, t: Throwable) {
+    mOVidiusService.getLink(getUserID(), getCdnName(), getChanelName(),  getServerType()).enqueue(object : Callback<List<OvidiousLiveModel>> {
+        override fun onFailure(call: Call<List<OvidiousLiveModel>>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)
             callback.onError()
         }
 
-        override fun onResponse(call: Call<List<OvidousModel>>, response: Response<List<OvidousModel>>) {
+        override fun onResponse(call: Call<List<OvidiousLiveModel>>, response: Response<List<OvidiousLiveModel>>) {
             if(response.isSuccessful){
-                response.body()?.firstOrNull()?.let {
-
-                    callback.onSucceed(getSrcFromOvidousModel(it))
-
+                response.body()?.firstOrNull()?.link?.let {
+                    callback.onSucceed(it.setLinkAsDvr())
                 } ?: callback.onError()
             } else {
                 callback.onError()
@@ -159,15 +164,15 @@ fun getServerType() = when (OSUtil.isTablet()) {
 
 fun getUserID() = PluginParams.ovidiusUserID
 
-fun getCdnName() = ""
+fun getCdnName() = PluginParams.ovidiusCdnName
 
-fun getChanelName() = ""
+fun getChanelName() = PluginParams.ovidiusCh
 
 fun getSrcFromOvidousModel(model: OvidousModel) : String{
     val fileNameArray = model.mediaFile.substringBeforeLast(".")
     val fileEnding = "." + model.mediaFile.substringAfterLast(".")
     val extendFileName = fileNameArray + model.bitretes + fileEnding
     return model.protocolType + model.serverAddress + model.mediaRoot + extendFileName + model.streamingType + model.token
-}
+}fun String.setLinkAsDvr() = if (!this.contains("?"))"$this?$DVR_IDENTIFIER" else ""
 
 

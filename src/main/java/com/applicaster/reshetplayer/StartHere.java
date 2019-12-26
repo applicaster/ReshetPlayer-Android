@@ -1,12 +1,15 @@
 package com.applicaster.reshetplayer;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import com.applicaster.analytics.AnalyticsAgentUtil;
+import com.applicaster.app.SpecificActivityLifecycleCallbacks;
 import com.applicaster.player.defaultplayer.DefaultPlayerWrapper;
 import com.applicaster.player.defaultplayer.gmf.GmfPlayer;
 import com.applicaster.player.defaultplayer.gmf.layeredvideo.PlaybackControlLayer;
@@ -18,10 +21,14 @@ import com.applicaster.plugin_manager.playersmanager.PlayerContract;
 import com.applicaster.util.UrlSchemeUtil;
 import com.applicaster.util.ui.ShareDialog;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Date;
 import java.util.Map;
 
 import static com.applicaster.player.Player.PLAYABLE_KEY;
+import static com.applicaster.reshetplayer.OvidiusServiceKt.getLiveSrc;
+import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
 import static com.applicaster.reshetplayer.RemoteKt.setServerDeltaTime;
 import static com.applicaster.reshetplayer.ReshetPlayer.NEED_TO_SEEK_START_TIME;
 import static com.applicaster.reshetplayer.helpers.COneLogicKt.isInOne;
@@ -70,18 +77,72 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
         Playable playable = getFirstPlayable();
 
-//        playable.setContentVideoUrl("https://reshet-live.ctedgecdn.net/13tv-desktop/r13.m3u8?DVR=true");
-
         // trying to parse ads from playable extension if it is possible
         playable = parseAdsFromPlayableIfPossible(playable);
 
-        if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
-            this.setPlaybackPosition(configuration);
+        if (playable.isLive()){
+            Playable finalPlayable = playable;
+            getLiveSrc(new CallbackResponseOVidius() {
+                @Override
+                public void onSucceed(@NotNull String result) {
+
+                    finalPlayable.setContentVideoUrl(result);
+
+                    if (finalPlayable == mCurrentPlayable && mCurrentState == State.Playing) {
+                        (StartHere.this).setPlaybackPosition(configuration);
+                    }
+                    else {
+                        mCurrentPlayable = finalPlayable;
+                        setPlayerState(State.LoadingPlayable);
+                        loadPlayable();
+                    }
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
         }
-        else {
-            mCurrentPlayable = playable;
-            setPlayerState(State.LoadingPlayable);
-            loadPlayable();
+        else{
+            //TODO -if video is not live some day in the future uncomment getVideoSrc part
+
+//            String videoId = playable.getPlayableId();
+//            if (videoId != null && !videoId.isEmpty()) {
+//                Playable finalPlayable1 = playable;
+//                getVideoSrc(videoId, new CallbackResponseOVidius() {
+//                    @Override
+//                    public void onSucceed(@NotNull String result) {
+//                        finalPlayable1.setContentVideoUrl(result);
+//                        finalPlayable1.getContentVideoURL();
+//
+//                        if (finalPlayable1 == mCurrentPlayable && mCurrentState == State.Playing) {
+//                            (StartHere.this).setPlaybackPosition(configuration);
+//                        }
+//                        else {
+//                            mCurrentPlayable = finalPlayable1;
+//                            setPlayerState(State.LoadingPlayable);
+//                            loadPlayable();
+//                        }
+//                    }
+//
+//                    @Override
+//                    public void onError() {
+//
+//                    }
+//                });
+//            }
+
+            //TODO -if video is not live some day in the future comment this part
+
+            if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
+                this.setPlaybackPosition(configuration);
+            }
+            else {
+                mCurrentPlayable = playable;
+                setPlayerState(State.LoadingPlayable);
+                loadPlayable();
+            }
         }
     }
 
@@ -93,6 +154,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         if (mGmfPlayer != null) {
             mGmfPlayer.release();
         }
+
 
 
         mGmfPlayer = new GmfPlayer((Activity) getContext(), mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);

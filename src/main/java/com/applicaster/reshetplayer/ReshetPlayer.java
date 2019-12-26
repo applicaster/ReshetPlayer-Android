@@ -11,6 +11,7 @@ import android.widget.RelativeLayout;
 import com.applicaster.analytics.AnalyticsAgentUtil;
 import com.applicaster.app.APProperties;
 import com.applicaster.atom.model.APAtomEntry;
+import com.applicaster.model.APChannel;
 import com.applicaster.model.APVodItem;
 import com.applicaster.player.Player;
 import com.applicaster.player.controller.APLightFavoritesMediaController;
@@ -47,6 +48,7 @@ import rx.Observable;
 import rx.Subscription;
 import rx.schedulers.Schedulers;
 
+import static com.applicaster.reshetplayer.OvidiusServiceKt.getLiveSrc;
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
@@ -137,7 +139,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     public void onItemLoaded(Playable loadedPlayable) {
         // replace our local playable with the loaded one.
         this.playable = loadedPlayable;
-        if (!isDvr(playable)) {
+        if (!playable.isLive()) {
             String videoId = playable.getPlayableId();
             if (videoId != null && !videoId.isEmpty()) {
                 getVideoSrc(videoId, new CallbackResponseOVidius() {
@@ -157,8 +159,25 @@ public class ReshetPlayer extends Player implements AMEventListener {
                 });
             }
         } else {
-            streamUrl = playable.getContentVideoURL();
-            processPaidItems(playable, videoView, this, storeFrontHandler);
+
+            getLiveSrc(new CallbackResponseOVidius() {
+                @Override
+                public void onSucceed(@NotNull String result) {
+                    ((APChannel) playable).setStream_url(result);
+                    playable.setContentVideoUrl(result);
+                    streamUrl = playable.getContentVideoURL();
+                    // Start a login process in case there's a login plugin present
+                    processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
+                }
+
+                @Override
+                public void onError() {
+
+                }
+            });
+
+//            streamUrl = playable.getContentVideoURL();
+//            processPaidItems(playable, videoView, this, storeFrontHandler);
         }
 
     }

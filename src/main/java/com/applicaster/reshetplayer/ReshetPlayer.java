@@ -1,6 +1,5 @@
 package com.applicaster.reshetplayer;
 
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -8,25 +7,20 @@ import android.view.ViewGroup;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 
-import com.applicaster.analytics.AnalyticsAgentUtil;
 import com.applicaster.app.APProperties;
 import com.applicaster.atom.model.APAtomEntry;
 import com.applicaster.model.APChannel;
-import com.applicaster.model.APURLPlayable;
 import com.applicaster.model.APVodItem;
 import com.applicaster.player.Player;
 import com.applicaster.player.controller.APLightFavoritesMediaController;
 import com.applicaster.player.controller.APLightMediaController;
 import com.applicaster.player.controller.APMediaController;
 import com.applicaster.player.controller.APMediaControllerI;
-import com.applicaster.player.controller.APSocialBarData;
-import com.applicaster.player.wrappers.PlayerViewWrapper;
 import com.applicaster.plugin_manager.playersmanager.Playable;
 import com.applicaster.reshetplayer.kantar.KantarPlayerAdapter;
 import com.applicaster.util.AppData;
 import com.applicaster.util.OSUtil;
 import com.applicaster.util.StringUtil;
-import com.applicaster.util.ui.APVideoViewWrapper;
 
 import net.artimedia.artisdk.api.AMContentState;
 import net.artimedia.artisdk.api.AMEventListener;

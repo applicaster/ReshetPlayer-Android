@@ -30,7 +30,7 @@ object PluginParams {
     internal val CONF_OVIDIUS_URL= "ovidius_url"
     internal val CONF_OVIDIUS_USER_ID= "ovidius_user_ID"
     internal val CONF_OVIDIUS_CDN_NAME= "ovidius_cdn_name"
-    internal val CONF_OVIDIUS_CH= "ovidius_Ch"
+    internal val CONF_OVIDIUS_CH= "ovidius_ch"
 
     fun initParams(pluginConfiguration: MutableMap<Any?, Any?>) {
         kantarSiteName = pluginConfiguration[CONF__DANTAR_SITE_KEY].toString()

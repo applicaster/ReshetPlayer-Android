@@ -110,7 +110,7 @@ data class OvidousModel(
 
 interface CallbackResponseOVidius{
     fun onSucceed(result: String)
-    fun onError()
+    fun onError(e:String)
 }
 
 fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
@@ -118,7 +118,7 @@ fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
         override fun onFailure(call: Call<List<OvidousModel>>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)
-            callback.onError()
+            callback.onError(t.message ?: "error")
         }
 
         override fun onResponse(call: Call<List<OvidousModel>>, response: Response<List<OvidousModel>>) {
@@ -127,9 +127,9 @@ fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
 
                     callback.onSucceed(getSrcFromOvidousModel(it))
 
-                } ?: callback.onError()
+                } ?: callback.onError(response.errorBody().toString())
             } else {
-                callback.onError()
+                callback.onError(response.errorBody().toString())
             }
         }
 
@@ -141,16 +141,16 @@ fun getLiveSrc(callback: CallbackResponseOVidius) {
         override fun onFailure(call: Call<List<OvidiousLiveModel>>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)
-            callback.onError()
+            callback.onError(t.message ?: "")
         }
 
         override fun onResponse(call: Call<List<OvidiousLiveModel>>, response: Response<List<OvidiousLiveModel>>) {
             if(response.isSuccessful){
                 response.body()?.firstOrNull()?.link?.let {
                     callback.onSucceed(it.setLinkAsDvr())
-                } ?: callback.onError()
+                } ?: callback.onError(response.errorBody().toString())
             } else {
-                callback.onError()
+                callback.onError(response.errorBody().toString())
             }
         }
 
@@ -164,15 +164,17 @@ fun getServerType() = when (OSUtil.isTablet()) {
 
 fun getUserID() = PluginParams.ovidiusUserID
 
-fun getCdnName() = PluginParams.ovidiusCdnName
+fun getCdnName() = PluginParams.ovidiusLiveCdnName
 
-fun getChanelName() = PluginParams.ovidiusCh
+fun getChanelName() = PluginParams.ovidiusLiveCh
 
 fun getSrcFromOvidousModel(model: OvidousModel) : String{
     val fileNameArray = model.mediaFile.substringBeforeLast(".")
     val fileEnding = "." + model.mediaFile.substringAfterLast(".")
     val extendFileName = fileNameArray + model.bitretes + fileEnding
     return model.protocolType + model.serverAddress + model.mediaRoot + extendFileName + model.streamingType + model.token
-}fun String.setLinkAsDvr() = if (!this.contains("?"))"$this?$DVR_IDENTIFIER" else ""
+}
+
+fun String.setLinkAsDvr() = "$this${if (this.contains("?")) "&" else "?"}$DVR_IDENTIFIER"
 
 

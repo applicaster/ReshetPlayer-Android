@@ -145,6 +145,11 @@ public class ReshetPlayer extends Player implements AMEventListener {
             if (videoId != null && !videoId.isEmpty()) {
                 getVideoSrc(videoId, new CallbackResponseOVidius() {
                     @Override
+                    public void onError(@NotNull String e) {
+                        Log.e("onError",e);
+                    }
+
+                    @Override
                     public void onSucceed(@NotNull String result) {
                         ((APAtomEntry.APAtomEntryPlayable) playable).getEntry().getContent().src = result;
                         playable.setContentVideoUrl(result);
@@ -153,10 +158,6 @@ public class ReshetPlayer extends Player implements AMEventListener {
                         processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
                     }
 
-                    @Override
-                    public void onError() {
-
-                    }
                 });
             }
         } else {
@@ -172,8 +173,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
                 }
 
                 @Override
-                public void onError() {
-
+                public void onError(@NotNull String e) {
+                    Log.e("onError",e);
                 }
             });
 

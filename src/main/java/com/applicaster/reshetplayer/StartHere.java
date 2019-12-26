@@ -30,6 +30,7 @@ import java.util.Map;
 
 import static com.applicaster.player.Player.PLAYABLE_KEY;
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getLiveSrc;
+import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
 import static com.applicaster.reshetplayer.RemoteKt.setServerDeltaTime;
 import static com.applicaster.reshetplayer.ReshetPlayer.NEED_TO_SEEK_START_TIME;
 import static com.applicaster.reshetplayer.helpers.COneLogicKt.isInOne;
@@ -102,40 +103,15 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
                 }
 
                 @Override
-                public void onError() {
-
+                public void onError(@NotNull String e) {
+                    Log.e("onError",e);
                 }
             });
         }
         else{
-//            //TODO -if video is not live some day in the future uncomment getVideoSrc part
-//
-////            String videoId = playable.getPlayableId();
-////            if (videoId != null && !videoId.isEmpty()) {
-////                Playable finalPlayable1 = playable;
-////                getVideoSrc(videoId, new CallbackResponseOVidius() {
-////                    @Override
-////                    public void onSucceed(@NotNull String result) {
-////                        finalPlayable1.setContentVideoUrl(result);
-////                        finalPlayable1.getContentVideoURL();
-////
-////                        if (finalPlayable1 == mCurrentPlayable && mCurrentState == State.Playing) {
-////                            (StartHere.this).setPlaybackPosition(configuration);
-////                        }
-////                        else {
-////                            mCurrentPlayable = finalPlayable1;
-////                            setPlayerState(State.LoadingPlayable);
-////                            loadPlayable();
-////                        }
-////                    }
-////
-////                    @Override
-////                    public void onError() {
-////
-////                    }
-////                });
-////            }
-//
+            //TODO -if video is not live some day in the future uncomment getVideoSrc part
+//            getVideoName(configuration, playable);
+
 //            //TODO -if video is not live some day in the future comment this part
 
             if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
@@ -146,6 +122,34 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
                 setPlayerState(State.LoadingPlayable);
                 loadPlayable();
             }
+        }
+    }
+
+    private void getVideoName(PlayableConfiguration configuration, Playable playable) {
+        String videoId = playable.getPlayableId();
+        if (videoId != null && !videoId.isEmpty()) {
+            Playable finalPlayable1 = playable;
+            getVideoSrc(videoId, new CallbackResponseOVidius() {
+                @Override
+                public void onSucceed(@NotNull String result) {
+                    finalPlayable1.setContentVideoUrl(result);
+                    finalPlayable1.getContentVideoURL();
+
+                    if (finalPlayable1 == mCurrentPlayable && mCurrentState == State.Playing) {
+                        (StartHere.this).setPlaybackPosition(configuration);
+                    }
+                    else {
+                        mCurrentPlayable = finalPlayable1;
+                        setPlayerState(State.LoadingPlayable);
+                        loadPlayable();
+                    }
+                }
+
+                @Override
+                public void onError(@NotNull String e) {
+                    Log.e("onError",e);
+                }
+            });
         }
     }
 
@@ -161,9 +165,13 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         if (getContext() instanceof ThemedReactContext){
             if (currentGenericMainActivity != null) {
                 mGmfPlayer = new GmfPlayer(currentGenericMainActivity, mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);
-            } else return;
-        } else{
+            } else {
+                return;
+            }
+        } else if(getContext() instanceof Activity){
             mGmfPlayer = new GmfPlayer((Activity) getContext(), mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);
+        } else {
+            return;
         }
 
         mGmfPlayer.setFullscreenCallback(new PlaybackControlLayer.FullscreenCallback() {
@@ -207,6 +215,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         initPluginParams();
 
         String serverUrl = PluginParams.INSTANCE.getServerTimeUrl();
+        registerActivityCallback();
 
         setServerDeltaTime(serverUrl, new CallbackResponse() {
             @Override
@@ -219,7 +228,9 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
                 listener.onHookFinished();
             }
         });
+    }
 
+    private void registerActivityCallback() {
         CustomApplication.getApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks(){
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
@@ -258,10 +269,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
                 CustomApplication.getApplication().unregisterActivityLifecycleCallbacks(this);
             }
         });
-
     }
-
-
 
     @Override
     public void executeOnStartup(Context context, HookListener listener) {

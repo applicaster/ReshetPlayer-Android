@@ -12,6 +12,7 @@ import com.applicaster.analytics.AnalyticsAgentUtil;
 import com.applicaster.app.APProperties;
 import com.applicaster.atom.model.APAtomEntry;
 import com.applicaster.model.APChannel;
+import com.applicaster.model.APURLPlayable;
 import com.applicaster.model.APVodItem;
 import com.applicaster.player.Player;
 import com.applicaster.player.controller.APLightFavoritesMediaController;
@@ -163,7 +164,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
             getLiveSrc(new CallbackResponseOVidius() {
                 @Override
                 public void onSucceed(@NotNull String result) {
-                    ((APChannel) playable).setStream_url(result);
+                    if(playable instanceof APChannel){((APChannel) playable).setStream_url(result);}
                     playable.setContentVideoUrl(result);
                     streamUrl = playable.getContentVideoURL();
                     // Start a login process in case there's a login plugin present

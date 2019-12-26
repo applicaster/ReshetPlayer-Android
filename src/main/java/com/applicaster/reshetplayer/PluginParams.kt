@@ -15,7 +15,7 @@ object PluginParams {
     var ovidiusUrl = "https://13tv-api.oplayer.io/"
     var ovidiusUserID = "45E4A9FB-FCE8-88BF-93CC-3650C39DDF28"
     var ovidiusCdnName = "casttime"
-    var ovidiusCh = "26"
+    var ovidiusCh = "1"
 
     internal val CONF_ARTIMEDIA_SITE_KEY = "artimedia_site_key"
     internal val CONF__DANTAR_SITE_KEY = "kantar_site_key"
@@ -29,6 +29,8 @@ object PluginParams {
     internal val CONF_KANTAR_ATRRIBUTE_STREAM_VALUE = "kantar_attribute_stream_value"
     internal val CONF_OVIDIUS_URL= "ovidius_url"
     internal val CONF_OVIDIUS_USER_ID= "ovidius_user_ID"
+    internal val CONF_OVIDIUS_CDN_NAME= "ovidius_cdn_name"
+    internal val CONF_OVIDIUS_CH= "ovidius_Ch"
 
     fun initParams(pluginConfiguration: MutableMap<Any?, Any?>) {
         kantarSiteName = pluginConfiguration[CONF__DANTAR_SITE_KEY].toString()
@@ -43,6 +45,8 @@ object PluginParams {
         kantarAttributeStreamValue = pluginConfiguration[CONF_KANTAR_ATRRIBUTE_STREAM_VALUE].toString()
         ovidiusUrl = pluginConfiguration[CONF_OVIDIUS_URL].toString()
         ovidiusUserID = pluginConfiguration[CONF_OVIDIUS_USER_ID].toString()
+        ovidiusCdnName = pluginConfiguration[CONF_OVIDIUS_CDN_NAME].toString()
+        ovidiusCh = pluginConfiguration[CONF_OVIDIUS_CH].toString()
     }
 
     private fun zappCheckboxToBoolean(value: String?): Boolean {

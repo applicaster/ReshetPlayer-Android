@@ -1,15 +1,16 @@
 package com.applicaster.reshetplayer;
 
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.ComponentName;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 
 import com.applicaster.analytics.AnalyticsAgentUtil;
-import com.applicaster.app.SpecificActivityLifecycleCallbacks;
+import com.applicaster.app.CustomApplication;
 import com.applicaster.player.defaultplayer.DefaultPlayerWrapper;
 import com.applicaster.player.defaultplayer.gmf.GmfPlayer;
 import com.applicaster.player.defaultplayer.gmf.layeredvideo.PlaybackControlLayer;
@@ -20,6 +21,7 @@ import com.applicaster.plugin_manager.playersmanager.PlayableConfiguration;
 import com.applicaster.plugin_manager.playersmanager.PlayerContract;
 import com.applicaster.util.UrlSchemeUtil;
 import com.applicaster.util.ui.ShareDialog;
+import com.facebook.react.uimanager.ThemedReactContext;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +30,6 @@ import java.util.Map;
 
 import static com.applicaster.player.Player.PLAYABLE_KEY;
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getLiveSrc;
-import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
 import static com.applicaster.reshetplayer.RemoteKt.setServerDeltaTime;
 import static com.applicaster.reshetplayer.ReshetPlayer.NEED_TO_SEEK_START_TIME;
 import static com.applicaster.reshetplayer.helpers.COneLogicKt.isInOne;
@@ -36,6 +37,8 @@ import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStar
 import static com.applicaster.reshetplayer.helpers.ServerDeltaTimeHelperKt.getServerDeltaTime;
 
 public class StartHere extends DefaultPlayerWrapper implements ApplicationLoaderHookUpI {
+
+    private Activity currentGenericMainActivity;
 
     @Override
     public void playInFullscreen(PlayableConfiguration configuration, int requestCode, Context context) {
@@ -105,35 +108,35 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
             });
         }
         else{
-            //TODO -if video is not live some day in the future uncomment getVideoSrc part
-
-//            String videoId = playable.getPlayableId();
-//            if (videoId != null && !videoId.isEmpty()) {
-//                Playable finalPlayable1 = playable;
-//                getVideoSrc(videoId, new CallbackResponseOVidius() {
-//                    @Override
-//                    public void onSucceed(@NotNull String result) {
-//                        finalPlayable1.setContentVideoUrl(result);
-//                        finalPlayable1.getContentVideoURL();
+//            //TODO -if video is not live some day in the future uncomment getVideoSrc part
 //
-//                        if (finalPlayable1 == mCurrentPlayable && mCurrentState == State.Playing) {
-//                            (StartHere.this).setPlaybackPosition(configuration);
-//                        }
-//                        else {
-//                            mCurrentPlayable = finalPlayable1;
-//                            setPlayerState(State.LoadingPlayable);
-//                            loadPlayable();
-//                        }
-//                    }
+////            String videoId = playable.getPlayableId();
+////            if (videoId != null && !videoId.isEmpty()) {
+////                Playable finalPlayable1 = playable;
+////                getVideoSrc(videoId, new CallbackResponseOVidius() {
+////                    @Override
+////                    public void onSucceed(@NotNull String result) {
+////                        finalPlayable1.setContentVideoUrl(result);
+////                        finalPlayable1.getContentVideoURL();
+////
+////                        if (finalPlayable1 == mCurrentPlayable && mCurrentState == State.Playing) {
+////                            (StartHere.this).setPlaybackPosition(configuration);
+////                        }
+////                        else {
+////                            mCurrentPlayable = finalPlayable1;
+////                            setPlayerState(State.LoadingPlayable);
+////                            loadPlayable();
+////                        }
+////                    }
+////
+////                    @Override
+////                    public void onError() {
+////
+////                    }
+////                });
+////            }
 //
-//                    @Override
-//                    public void onError() {
-//
-//                    }
-//                });
-//            }
-
-            //TODO -if video is not live some day in the future comment this part
+//            //TODO -if video is not live some day in the future comment this part
 
             if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
                 this.setPlaybackPosition(configuration);
@@ -155,9 +158,14 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
             mGmfPlayer.release();
         }
 
+        if (getContext() instanceof ThemedReactContext){
+            if (currentGenericMainActivity != null) {
+                mGmfPlayer = new GmfPlayer(currentGenericMainActivity, mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);
+            } else return;
+        } else{
+            mGmfPlayer = new GmfPlayer((Activity) getContext(), mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);
+        }
 
-
-        mGmfPlayer = new GmfPlayer((Activity) getContext(), mVideoCellView, mCurrentVideo, mCurrentImaAdUrl, mCurrentPlayable, eventEmitter);
         mGmfPlayer.setFullscreenCallback(new PlaybackControlLayer.FullscreenCallback() {
             @Override
             public void onGoToFullscreen(int currPosition) {
@@ -211,6 +219,46 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
                 listener.onHookFinished();
             }
         });
+
+        CustomApplication.getApplication().registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks(){
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+                Log.e("onActivityCreated",activity.toString());
+                if (activity.toString().contains("GenericMainFragmentActivity")) currentGenericMainActivity = activity;
+            }
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+                Log.e("onActivityStarted",activity.toString());
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+                Log.e("onActivityResumed",activity.toString());
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+                Log.e("onActivityPaused",activity.toString());
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+                Log.e("onActivityStopped",activity.toString());
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+                Log.e("onActivitySaveInstance",activity.toString());
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+                Log.e("onActivityDestroyed",activity.toString());
+                CustomApplication.getApplication().unregisterActivityLifecycleCallbacks(this);
+            }
+        });
+
     }
 
 

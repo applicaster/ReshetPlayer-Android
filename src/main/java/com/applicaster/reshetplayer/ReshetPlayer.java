@@ -123,32 +123,33 @@ public class ReshetPlayer extends Player implements AMEventListener {
             return;
         }
 
-        api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
+//        api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
     }
 
     private AMInitJsonBuilder getArtimediaInitJsonBuilderParams()
     {
         AMInitJsonBuilder initJsonBuilder = new AMInitJsonBuilder(getApplicationContext());
-        try {
-            initJsonBuilder.putPlacementSiteKey(PluginParams.INSTANCE.getArtimediaSiteName())
-                    .putPlacementCategory("test")
-                    .putPlacementIsLive(playable.isLive() || isDvr(playable))
-                    .putContentId(playable.getPlayableId())
-                    //.putContentDuration("594")
-                   // .putContentType("movies")
-                   // .putContentProgramName("content program name")
-                   // .putContentSeason("season01")
-                   // .putContentEpisode("episode01")
-                   // .putContentGenre("comedy")
-                   // .putContentTargetAudience("18+")
-                      .putContentVideoUrl(URLEncoder.encode(playable.getContentVideoURL(), "UTF-8"))
-                  //  .putSubscriberId("87c1363b-70a9-4c69-ad01-7af8c13ddc87")
-                  //  .putSubscriberPlan("family")
-            ;
+        if (playable.getContentVideoURL() != null) {
+            try {
+                initJsonBuilder.putPlacementSiteKey(PluginParams.INSTANCE.getArtimediaSiteName())
+                        .putPlacementCategory("test")
+                        .putPlacementIsLive(playable.isLive() || isDvr(playable))
+                        .putContentId(playable.getPlayableId())
+                        //.putContentDuration("594")
+                        // .putContentType("movies")
+                        // .putContentProgramName("content program name")
+                        // .putContentSeason("season01")
+                        // .putContentEpisode("episode01")
+                        // .putContentGenre("comedy")
+                        // .putContentTargetAudience("18+")
+                        .putContentVideoUrl(URLEncoder.encode(playable.getContentVideoURL(), "UTF-8"))
+                //  .putSubscriberId("87c1363b-70a9-4c69-ad01-7af8c13ddc87")
+                //  .putSubscriberPlan("family")
+                ;
 
-        }
-        catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         return initJsonBuilder;
     }
@@ -163,7 +164,33 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     @Override
     public void onItemLoaded(Playable loadedPlayable) {
-        // replace our local playable with the loaded one.
+        super.onItemLoaded(playable);
+        initializeAM(); // TODO - comment initializeAM when reshet want secured link
+//        getSecuredLink(loadedPlayable,findViewById(R.id.ad_video_frame)); // TODO - uncomment getSecuredLink when reshet want secured link
+    }
+
+    private void initializeAM() {
+        if (api == null){
+            api = AMSDK.getVideoAdvAPI();
+
+            api.registerEvent(AMEventType.EVT_INIT_COMPLETE, this);
+            api.registerEvent(AMEventType.EVT_PAUSE_REQUEST, this);
+            api.registerEvent(AMEventType.EVT_RESUME_REQUEST, this);
+            api.registerEvent(AMEventType.EVT_LINEAR_AD_START, this);
+            api.registerEvent(AMEventType.EVT_LINEAR_AD_PAUSE, this);
+            api.registerEvent(AMEventType.EVT_LINEAR_AD_RESUME, this);
+            api.registerEvent(AMEventType.EVT_LINEAR_AD_STOP, this);
+            api.registerEvent(AMEventType.EVT_AD_MISSED, this);
+            api.registerEvent(AMEventType.EVT_AD_SHOW, this);
+            api.registerEvent(AMEventType.EVT_AD_HIDE, this);
+            api.registerEvent(AMEventType.EVT_SESSION_END, this);
+            api.registerEvent(AMEventType.EVT_AD_CLICK, this);
+        }
+        api.initialize(new AMInitParams(findViewById(R.id.ad_video_frame), getArtimediaInitJsonBuilderParams()));
+    }
+
+    private void getSecuredLink(Playable loadedPlayable,View v) {
+                // replace our local playable with the loaded one.
         this.playable = loadedPlayable;
         if (!playable.isLive()) {
             String videoId = playable.getPlayableId();
@@ -181,6 +208,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                         streamUrl = playable.getContentVideoURL();
                         // Start a login process in case there's a login plugin present
                         processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
+                        api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
                     }
 
                 });
@@ -195,6 +223,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                     streamUrl = playable.getContentVideoURL();
                     // Start a login process in case there's a login plugin present
                     processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
+                    api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
                 }
 
                 @Override

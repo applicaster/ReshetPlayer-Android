@@ -25,7 +25,6 @@ import com.facebook.react.uimanager.ThemedReactContext;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Date;
 import java.util.Map;
 
 import static com.applicaster.player.Player.PLAYABLE_KEY;
@@ -33,9 +32,6 @@ import static com.applicaster.reshetplayer.OvidiusServiceKt.getLiveSrc;
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
 import static com.applicaster.reshetplayer.RemoteKt.setServerDeltaTime;
 import static com.applicaster.reshetplayer.ReshetPlayer.NEED_TO_SEEK_START_TIME;
-import static com.applicaster.reshetplayer.helpers.COneLogicKt.isInOne;
-import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
-import static com.applicaster.reshetplayer.helpers.ServerDeltaTimeHelperKt.getServerDeltaTime;
 
 public class StartHere extends DefaultPlayerWrapper implements ApplicationLoaderHookUpI {
 
@@ -84,6 +80,24 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         // trying to parse ads from playable extension if it is possible
         playable = parseAdsFromPlayableIfPossible(playable);
 
+        // TODO - comment this method when reshet want secured link
+        showVideo(configuration, playable);
+
+        // TODO - uncomment this method section when reshet want secured link
+//        getVideoAndShow(configuration, playable);
+    }
+
+    private void showVideo(PlayableConfiguration configuration, Playable playable) {
+        if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
+            this.setPlaybackPosition(configuration);
+        } else {
+            mCurrentPlayable = playable;
+            setPlayerState(State.LoadingPlayable);
+            loadPlayable();
+        }
+    }
+
+    private void getVideoAndShow(PlayableConfiguration configuration, Playable playable) {
         if (playable.isLive()){
             Playable finalPlayable = playable;
             getLiveSrc(new CallbackResponseOVidius() {
@@ -92,14 +106,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
                     finalPlayable.setContentVideoUrl(result);
 
-                    if (finalPlayable == mCurrentPlayable && mCurrentState == State.Playing) {
-                        (StartHere.this).setPlaybackPosition(configuration);
-                    }
-                    else {
-                        mCurrentPlayable = finalPlayable;
-                        setPlayerState(State.LoadingPlayable);
-                        loadPlayable();
-                    }
+                    showVideo(configuration, finalPlayable);
                 }
 
                 @Override
@@ -114,14 +121,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
 //            //TODO -if video is not live some day in the future comment this part
 
-            if (playable == mCurrentPlayable && mCurrentState == State.Playing) {
-                this.setPlaybackPosition(configuration);
-            }
-            else {
-                mCurrentPlayable = playable;
-                setPlayerState(State.LoadingPlayable);
-                loadPlayable();
-            }
+            showVideo(configuration, playable);
         }
     }
 
@@ -135,14 +135,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
                     finalPlayable1.setContentVideoUrl(result);
                     finalPlayable1.getContentVideoURL();
 
-                    if (finalPlayable1 == mCurrentPlayable && mCurrentState == State.Playing) {
-                        (StartHere.this).setPlaybackPosition(configuration);
-                    }
-                    else {
-                        mCurrentPlayable = finalPlayable1;
-                        setPlayerState(State.LoadingPlayable);
-                        loadPlayable();
-                    }
+                    showVideo(configuration, finalPlayable1);
                 }
 
                 @Override

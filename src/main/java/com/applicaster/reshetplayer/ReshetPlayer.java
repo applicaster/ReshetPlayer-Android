@@ -164,7 +164,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     @Override
     public void onItemLoaded(Playable loadedPlayable) {
-        super.onItemLoaded(playable);
+        super.onItemLoaded(loadedPlayable);
         initializeAM(); // TODO - comment initializeAM when reshet want secured link
 //        getSecuredLink(loadedPlayable,findViewById(R.id.ad_video_frame)); // TODO - uncomment getSecuredLink when reshet want secured link
     }

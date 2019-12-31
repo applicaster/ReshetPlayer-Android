@@ -19,6 +19,13 @@ fun Playable.getVideoStartTime() : Long? {
     }
 }
 
+fun Playable.getContentProgramName () : String? = (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["program_name"] as? String
+fun Playable.getContentType () : String? = (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["content_type"] as? String
+fun Playable.getContentSeason () : String? = (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["content_season"] as? String
+fun Playable.getContentEpisode () : String? = (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["content_episode"] as? String
+fun Playable.getContentGenre () : String? = (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["content_genre"] as? String
+fun Playable.getContentAudience () : String? = (this as APAtomEntry.APAtomEntryPlayable).entry.extensions["content_target_audience"] as? String
+
 fun Playable.setVideoStartTime(startTime: Long) {
     when (this){
         is APAtomEntry.APAtomEntryPlayable ->

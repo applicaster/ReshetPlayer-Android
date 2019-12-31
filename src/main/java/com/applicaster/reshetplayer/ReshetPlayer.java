@@ -48,7 +48,12 @@ import rx.schedulers.Schedulers;
 
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getLiveSrc;
 import static com.applicaster.reshetplayer.OvidiusServiceKt.getVideoSrc;
-import static android.provider.MediaStore.Video.VideoColumns.CATEGORY;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getContentAudience;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getContentEpisode;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getContentGenre;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getContentProgramName;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getContentSeason;
+import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getContentType;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.getVideoStartTime;
 import static com.applicaster.reshetplayer.helpers.PlayableHelperKt.isDvr;
 import static com.applicaster.reshetplayer.kantar.KantarSensorKt.KANTAR_ATTRIBUTE_STREAM_KEY;
@@ -126,8 +131,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 //        api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
     }
 
-    private AMInitJsonBuilder getArtimediaInitJsonBuilderParams()
-    {
+    private AMInitJsonBuilder getArtimediaInitJsonBuilderParams() {
         AMInitJsonBuilder initJsonBuilder = new AMInitJsonBuilder(getApplicationContext());
         if (playable.getContentVideoURL() != null) {
             try {
@@ -135,17 +139,33 @@ public class ReshetPlayer extends Player implements AMEventListener {
                         .putPlacementCategory("test")
                         .putPlacementIsLive(playable.isLive() || isDvr(playable))
                         .putContentId(playable.getPlayableId())
-                        //.putContentDuration("594")
-                        // .putContentType("movies")
-                        // .putContentProgramName("content program name")
-                        // .putContentSeason("season01")
-                        // .putContentEpisode("episode01")
-                        // .putContentGenre("comedy")
-                        // .putContentTargetAudience("18+")
-                        .putContentVideoUrl(URLEncoder.encode(playable.getContentVideoURL(), "UTF-8"))
+                        .putContentVideoUrl(URLEncoder.encode(playable.getContentVideoURL(), "UTF-8"));
+
+                if (!playable.isLive() && playable instanceof APAtomEntry.APAtomEntryPlayable) {
+//                             initJsonBuilder.putContentDuration();
+                    if (getContentType(playable) != null) {
+                        initJsonBuilder.putContentType(getContentType(playable));
+                    }
+                    if (getContentProgramName(playable) != null) {
+                        initJsonBuilder.putContentProgramName(getContentProgramName(playable));
+                    }
+                    if (getContentSeason(playable) != null) {
+                        initJsonBuilder.putContentSeason(getContentSeason(playable));
+                    }
+                    if (getContentAudience(playable) != null) {
+                        initJsonBuilder.putContentProgramName(getContentAudience(playable));
+                    }
+                    if (getContentEpisode(playable) != null) {
+                        initJsonBuilder.putContentProgramName(getContentEpisode(playable));
+                    }
+                    if (getContentGenre(playable) != null) {
+                        initJsonBuilder.putContentProgramName(getContentGenre(playable));
+                    }
+                }
+
                 //  .putSubscriberId("87c1363b-70a9-4c69-ad01-7af8c13ddc87")
                 //  .putSubscriberPlan("family")
-                ;
+
 
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
@@ -170,7 +190,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     }
 
     private void initializeAM() {
-        if (api == null){
+        if (api == null) {
             api = AMSDK.getVideoAdvAPI();
 
             api.registerEvent(AMEventType.EVT_INIT_COMPLETE, this);
@@ -189,8 +209,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
         api.initialize(new AMInitParams(findViewById(R.id.ad_video_frame), getArtimediaInitJsonBuilderParams()));
     }
 
-    private void getSecuredLink(Playable loadedPlayable,View v) {
-                // replace our local playable with the loaded one.
+    private void getSecuredLink(Playable loadedPlayable, View v) {
+        // replace our local playable with the loaded one.
         this.playable = loadedPlayable;
         if (!playable.isLive()) {
             String videoId = playable.getPlayableId();
@@ -198,7 +218,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                 getVideoSrc(videoId, new CallbackResponseOVidius() {
                     @Override
                     public void onError(@NotNull String e) {
-                        Log.e("onError",e);
+                        Log.e("onError", e);
                     }
 
                     @Override
@@ -218,7 +238,9 @@ public class ReshetPlayer extends Player implements AMEventListener {
             getLiveSrc(new CallbackResponseOVidius() {
                 @Override
                 public void onSucceed(@NotNull String result) {
-                    if(playable instanceof APChannel){((APChannel) playable).setStream_url(result);}
+                    if (playable instanceof APChannel) {
+                        ((APChannel) playable).setStream_url(result);
+                    }
                     playable.setContentVideoUrl(result);
                     streamUrl = playable.getContentVideoURL();
                     // Start a login process in case there's a login plugin present
@@ -228,7 +250,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
                 @Override
                 public void onError(@NotNull String e) {
-                    Log.e("onError",e);
+                    Log.e("onError", e);
                 }
             });
         }
@@ -327,14 +349,13 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
                             float pos = (float) Math.ceil(getCurrentPosition() / 1000);
 
-                            if(isDvr(playable) || playable.isLive()){
+                            if (isDvr(playable) || playable.isLive()) {
                                 pos = (float) Math.ceil(videoView.getCurrentDate() / 1000);
                             }
 
                             if (api != null && pos > 0) {
                                 api.updateVideoTime(pos);
                             }
-
 
 
 //                            Log.d(TAG, "sending position: " + pos);

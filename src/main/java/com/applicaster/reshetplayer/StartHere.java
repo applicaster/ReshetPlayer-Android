@@ -76,15 +76,9 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
         this.configuration = configuration;
 
         Playable playable = getFirstPlayable();
-
         // trying to parse ads from playable extension if it is possible
         playable = parseAdsFromPlayableIfPossible(playable);
-
-        // TODO - comment this method when reshet want secured link
-        showVideo(configuration, playable);
-
-        // TODO - uncomment this method section when reshet want secured link
-//        getVideoAndShow(configuration, playable);
+        getVideoAndShow(configuration, playable);
     }
 
     private void showVideo(PlayableConfiguration configuration, Playable playable) {
@@ -99,14 +93,13 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
     private void getVideoAndShow(PlayableConfiguration configuration, Playable playable) {
         if (playable.isLive()){
-            Playable finalPlayable = playable;
             getLiveSrc(new CallbackResponseOVidius() {
                 @Override
                 public void onSucceed(@NotNull String result) {
 
-                    finalPlayable.setContentVideoUrl(result);
+                    playable.setContentVideoUrl(result);
 
-                    showVideo(configuration, finalPlayable);
+                    showVideo(configuration, playable);
                 }
 
                 @Override
@@ -116,26 +109,20 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
             });
         }
         else{
-            //TODO -if video is not live some day in the future uncomment getVideoSrc part
-//            getVideoName(configuration, playable);
-
-//            //TODO -if video is not live some day in the future comment this part
-
-            showVideo(configuration, playable);
+            getVideoName(configuration, playable);
         }
     }
 
     private void getVideoName(PlayableConfiguration configuration, Playable playable) {
         String videoId = playable.getPlayableId();
         if (videoId != null && !videoId.isEmpty()) {
-            Playable finalPlayable1 = playable;
             getVideoSrc(videoId, new CallbackResponseOVidius() {
                 @Override
                 public void onSucceed(@NotNull String result) {
-                    finalPlayable1.setContentVideoUrl(result);
-                    finalPlayable1.getContentVideoURL();
+                    playable.setContentVideoUrl(result);
+                    playable.getContentVideoURL();
 
-                    showVideo(configuration, finalPlayable1);
+                    showVideo(configuration, playable);
                 }
 
                 @Override

@@ -127,8 +127,6 @@ public class ReshetPlayer extends Player implements AMEventListener {
         if (castPlugin != null && castPlugin.shouldPlayWithCast()) {
             return;
         }
-
-//        api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
     }
 
     private AMInitJsonBuilder getArtimediaInitJsonBuilderParams() {
@@ -137,7 +135,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
             try {
                 initJsonBuilder.putPlacementSiteKey(PluginParams.INSTANCE.getArtimediaSiteName())
                         .putPlacementCategory("test")
-                        .putPlacementIsLive(playable.isLive() || isDvr(playable))
+                        .putPlacementIsLive(playable.isLive())
                         .putContentId(playable.getPlayableId())
                         .putContentVideoUrl(URLEncoder.encode(playable.getContentVideoURL(), "UTF-8"));
 
@@ -184,9 +182,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
 
     @Override
     public void onItemLoaded(Playable loadedPlayable) {
-        super.onItemLoaded(loadedPlayable);
-        initializeAM(); // TODO - comment initializeAM when reshet want secured link
-//        getSecuredLink(loadedPlayable,findViewById(R.id.ad_video_frame)); // TODO - uncomment getSecuredLink when reshet want secured link
+        getSecuredLink(loadedPlayable,findViewById(R.id.ad_video_frame));
     }
 
     private void initializeAM() {
@@ -228,7 +224,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                         streamUrl = playable.getContentVideoURL();
                         // Start a login process in case there's a login plugin present
                         processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
-                        api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
+                        initializeAM();
                     }
 
                 });
@@ -245,7 +241,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                     streamUrl = playable.getContentVideoURL();
                     // Start a login process in case there's a login plugin present
                     processPaidItems(playable, videoView, ReshetPlayer.this, storeFrontHandler);
-                    api.initialize(new AMInitParams(v, getArtimediaInitJsonBuilderParams()));
+                    initializeAM();
                 }
 
                 @Override
@@ -370,8 +366,8 @@ public class ReshetPlayer extends Player implements AMEventListener {
         }
 
 
-        if (playable.isLive() || isDvr(playable)) {
-//            startKantarStream(); Todo add when reshet ask to
+        if (playable.isLive()) {
+            startKantarStream();
         }
 
     }
@@ -385,7 +381,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
         dismissTimer();
         api.updateVideoState(AMContentState.VIDEO_STATE_PAUSE);
 
-//        stopKantarStream(); Todo add when reshet ask to
+        stopKantarStream();
     }
 
     @Override

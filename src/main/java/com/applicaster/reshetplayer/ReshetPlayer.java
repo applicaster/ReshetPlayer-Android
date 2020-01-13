@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 
@@ -39,6 +40,7 @@ import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import de.spring.mobile.Stream;
@@ -215,6 +217,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
                     @Override
                     public void onError(@NotNull String e) {
                         Log.e("onError", e);
+                        showErrorScreen(v);
                     }
 
                     @Override
@@ -247,9 +250,16 @@ public class ReshetPlayer extends Player implements AMEventListener {
                 @Override
                 public void onError(@NotNull String e) {
                     Log.e("onError", e);
+                    showErrorScreen(v);
                 }
             });
         }
+    }
+
+    private void showErrorScreen(View v){
+        ImageView iv = new ImageView(v.getContext());
+        iv.setImageResource(R.drawable.no_video_found_bg);
+        ReshetPlayer.this.setContentView(iv);
     }
 
     @Override
@@ -304,7 +314,11 @@ public class ReshetPlayer extends Player implements AMEventListener {
             case EVT_RESUME_REQUEST:
                 // move to EVT_LINEAR_AD_STOP
                 //  adInProgress = false;
-                playerContainer.addView(videoView, 0);
+                try {
+                    playerContainer.addView(videoView, 0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 startVideo();
                 break;
             case EVT_AD_SHOW:
@@ -447,7 +461,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
             } else {
                 RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
                 params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-                mCustomMediaController = new APMediaController(this, null) {
+                mCustomMediaController = new ReshetPlayerMediaController(this, null) {
 
                     @Override
                     public void show() {
@@ -517,7 +531,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
     private void startKantarStream() {
         Map<String, Object> atts = new HashMap<String, Object>();
         atts.put(KANTAR_ATTRIBUTE_STREAM_KEY, PluginParams.INSTANCE.getKantarAttributeStreamValue()); // mandatory
-        stream = getKantarSensor().track(new KantarPlayerAdapter(this), atts);
+        stream = Objects.requireNonNull(getKantarSensor()).track(new KantarPlayerAdapter(this), atts);
     }
 
     private void stopKantarStream() {

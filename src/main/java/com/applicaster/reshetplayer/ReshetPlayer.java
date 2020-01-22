@@ -153,13 +153,13 @@ public class ReshetPlayer extends Player implements AMEventListener {
                         initJsonBuilder.putContentSeason(getContentSeason(playable));
                     }
                     if (getContentAudience(playable) != null) {
-                        initJsonBuilder.putContentProgramName(getContentAudience(playable));
+                        initJsonBuilder.putContentTargetAudience(getContentAudience(playable));
                     }
                     if (getContentEpisode(playable) != null) {
-                        initJsonBuilder.putContentProgramName(getContentEpisode(playable));
+                        initJsonBuilder.putContentEpisode(getContentEpisode(playable));
                     }
                     if (getContentGenre(playable) != null) {
-                        initJsonBuilder.putContentProgramName(getContentGenre(playable));
+                        initJsonBuilder.putContentGenre(getContentGenre(playable));
                     }
                 }
 
@@ -403,8 +403,9 @@ public class ReshetPlayer extends Player implements AMEventListener {
         super.stopVideo();
 
         Log.d(TAG, "stopping video");
-
-        api.updateVideoState(AMContentState.VIDEO_STATE_STOP);
+        if (api != null && !adInProgress) {
+            api.updateVideoState(AMContentState.VIDEO_STATE_STOP);
+        }
     }
 
     @Override

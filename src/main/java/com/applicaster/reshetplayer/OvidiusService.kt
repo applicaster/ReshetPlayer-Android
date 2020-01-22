@@ -38,7 +38,7 @@ interface OVidiusService {
     fun getVideoByName(
             @Query("userId") userId: String,
             @Query("videoName") fileName: String,
-            @Query("serverType") serverType: ServerType
+            @Query("serverType") serverType:String
     ): Call<List<OvidousModel>>
 
     @GET("api/getlink")
@@ -46,7 +46,7 @@ interface OVidiusService {
             @Query("userId") userId: String,
             @Query("cdnName") cdnName: String,
             @Query("ch") chanelName: String,
-            @Query("serverType") serverType: ServerType
+            @Query("serverType") serverType: String
     ): Call<List<OvidiousLiveModel>>
 }
 
@@ -58,9 +58,9 @@ data class OvidiousLiveModel(
 
 
 data class OvidousModel(
-        @SerializedName("Bitrates")
+        @SerializedName("appAndroidBitrates")
         val bitretes: String,
-        @SerializedName("Token")
+        @SerializedName("appAndroidToken")
         val token: String,
         @SerializedName("ServerType")
         val serverType: String,
@@ -114,7 +114,7 @@ interface CallbackResponseOVidius{
 }
 
 fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
-    mOVidiusService.getVideoByName(getUserID(), videoName, getServerType()).enqueue(object : Callback<List<OvidousModel>> {
+    mOVidiusService.getVideoByName(getUserID(), videoName, getServerType().serverType).enqueue(object : Callback<List<OvidousModel>> {
         override fun onFailure(call: Call<List<OvidousModel>>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)
@@ -137,7 +137,7 @@ fun getVideoSrc(videoName: String, callback: CallbackResponseOVidius) {
 }
 
 fun getLiveSrc(callback: CallbackResponseOVidius) {
-    mOVidiusService.getLink(getUserID(), getCdnName(), getChanelName(),  getServerType()).enqueue(object : Callback<List<OvidiousLiveModel>> {
+    mOVidiusService.getLink(getUserID(), getCdnName(), getChanelName(),  getServerType().serverType).enqueue(object : Callback<List<OvidiousLiveModel>> {
         override fun onFailure(call: Call<List<OvidiousLiveModel>>, t: Throwable) {
             // do nothing
             Log.d("error", t.message)

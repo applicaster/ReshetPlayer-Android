@@ -136,7 +136,7 @@ public class ReshetPlayer extends Player implements AMEventListener {
         if (playable.getContentVideoURL() != null) {
             try {
                 initJsonBuilder.putPlacementSiteKey(PluginParams.INSTANCE.getArtimediaSiteName())
-                        .putPlacementCategory("test")
+                        .putPlacementCategory(playable.getPlayableId())
                         .putPlacementIsLive(playable.isLive())
                         .putContentId(playable.getPlayableId())
                         .putContentVideoUrl(URLEncoder.encode(playable.getContentVideoURL(), "UTF-8"));

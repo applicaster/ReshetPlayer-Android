@@ -192,7 +192,6 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
     @Override
     public void executeOnApplicationReady(Context context, HookListener listener) {
-        initPluginParams();
 
         String serverUrl = PluginParams.INSTANCE.getServerTimeUrl();
         registerActivityCallback();
@@ -253,6 +252,7 @@ public class StartHere extends DefaultPlayerWrapper implements ApplicationLoader
 
     @Override
     public void executeOnStartup(Context context, HookListener listener) {
+        initPluginParams();
         listener.onHookFinished();
     }
 

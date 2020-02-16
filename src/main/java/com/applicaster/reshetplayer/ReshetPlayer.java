@@ -530,9 +530,15 @@ public class ReshetPlayer extends Player implements AMEventListener {
     }
 
     private void startKantarStream() {
+
+        stopKantarStream();
+
         Map<String, Object> atts = new HashMap<String, Object>();
         atts.put(KANTAR_ATTRIBUTE_STREAM_KEY, PluginParams.INSTANCE.getKantarAttributeStreamValue()); // mandatory
-        stream = Objects.requireNonNull(getKantarSensor()).track(new KantarPlayerAdapter(this), atts);
+
+        if(getKantarSensor() != null) {
+            stream = getKantarSensor().track(new KantarPlayerAdapter(this), atts);
+        }
     }
 
     private void stopKantarStream() {

@@ -5,7 +5,14 @@ import com.applicaster.reshetplayer.PluginParams
 import de.spring.mobile.SpringStreams
 
 
-val kantarSensor: SpringStreams? by lazy { SpringStreams.getInstance(PluginParams.kantarSiteName, appName, CustomApplication.getAppContext()) }
+val kantarSensor: SpringStreams? by lazy {
+
+    if (PluginParams.kantarSiteName.isNotBlank()) {
+        SpringStreams.getInstance(PluginParams.kantarSiteName, appName, CustomApplication.getAppContext())
+    } else {
+        null
+    }
+}
 
 val appName: String by lazy {
     val manager = CustomApplication.getAppContext().packageManager

@@ -6,7 +6,8 @@ const val RESHET_SERVER_DELTA_TIME = "reshet_server_delta_time"
 
 fun getServerDeltaTime(): Long{
     val dateString = SessionStorage.get(RESHET_SERVER_DELTA_TIME)
-    return dateString.toLongOrNull() ?: 0
+    return if (dateString==null) 0
+    else dateString.toLongOrNull() ?: 0
 }
 
 fun setSeverDelatTime(time: Long){

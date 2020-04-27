@@ -56,7 +56,7 @@ dependencies {
     api 'com.applicaster:artimedia:1.4.1@aar'
     api 'com.applicaster:kantarmedia-streaming-android-barb:1.5.1@aar'
 
-    api ("com.applicaster:ApplicasterVideoPlayer-Android:0.1.0") {
+    api ("com.applicaster:ApplicasterVideoPlayer-Android:0.4.0") {
         exclude group:    'com.applicaster', module: 'applicaster-android-sdk'
         exclude group:    'com.applicaster', module: 'zapp-root-android'
     }

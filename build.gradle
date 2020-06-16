@@ -56,10 +56,12 @@ dependencies {
     api 'com.applicaster:artimedia:1.4.1@aar'
     api 'com.applicaster:kantarmedia-streaming-android-barb:1.5.1@aar'
 
-    api ("com.applicaster:ApplicasterVideoPlayer-Android:0.4.0") {
-        exclude group:    'com.applicaster', module: 'applicaster-android-sdk'
-        exclude group:    'com.applicaster', module: 'zapp-root-android'
-    }
+
+    implementation 'com.google.android.exoplayer:exoplayer-core:2.10.1'
+    implementation 'com.google.android.exoplayer:exoplayer-dash:2.10.1'
+    implementation 'com.google.android.exoplayer:exoplayer-hls:2.10.1'
+    implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.10.1'
+    implementation "com.google.android.exoplayer:exoplayer-ui:2.9.6"
 
     // Check if an open SDK is defined - if not use the closed one.
     def devSDK = findProject(':applicaster-android-sdk')

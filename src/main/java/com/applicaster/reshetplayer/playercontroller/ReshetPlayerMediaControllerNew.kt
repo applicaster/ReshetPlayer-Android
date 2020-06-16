@@ -1,18 +1,25 @@
-package com.applicaster.reshetplayer
+package com.applicaster.reshetplayer.playercontroller
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.TextView
-import com.applicaster.player.controller.APMediaController
 import com.applicaster.player.controller.MidrollView
+import com.applicaster.reshetplayer.R
+import com.applicaster.reshetplayer.helpers.isDvr
 import com.applicaster.util.OSUtil
 import com.applicaster.util.StringUtil
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-open class ReshetPlayerMediaController(context: Context?, attrs: AttributeSet?) : APMediaController(context, attrs) {
+open class ReshetPlayerMediaControllerNew(context: Context?, attrs: AttributeSet?) : APMediaController(context, attrs) {
+
+    lateinit var toggleVolumeButton: View
+    var setVolumeLisener: SetVolumeCallback? = null
+    var isVolumeOn = true;
 
     override fun initSeekBar() {
         timerContainer = findViewById(OSUtil.getResourceId("timer_container"))
@@ -38,7 +45,7 @@ open class ReshetPlayerMediaController(context: Context?, attrs: AttributeSet?) 
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {
                 seekingActionInProgress = true
-                player.seekStart(seekBar.progress)
+                player.onSeekStart(seekBar.progress)
                 stopCurrentPositionTimer()
             }
 
@@ -49,6 +56,10 @@ open class ReshetPlayerMediaController(context: Context?, attrs: AttributeSet?) 
                 }
             }
         })
+    }
+
+    override fun setVolumeCallback(setVolumeCallback: SetVolumeCallback?) {
+      this.setVolumeLisener = setVolumeCallback
     }
 
 
@@ -87,6 +98,62 @@ open class ReshetPlayerMediaController(context: Context?, attrs: AttributeSet?) 
             val seconds = TimeUnit.MILLISECONDS.toSeconds(durationMillis) % TimeUnit.MINUTES.toSeconds(1)
             String.format("%02d:%02d:%02d", hours, minutes, seconds)
         } else "00:00:00"
+    }
+
+    override fun show() {
+        if(false) {
+        //if (isLive && playable.isDvr() == false) {
+            if (timerContainer != null) {
+                timerContainer.visibility = View.GONE
+                seekbar.visibility = View.GONE
+            }
+            if (seekbarContainer != null) {
+                seekbarContainer.visibility = View.GONE
+                seekbar.visibility = View.GONE
+            }
+        } else {
+            val currentPosition = this.currentPosition
+            val duration = player.duration
+            if (!isSocialbarEnabled) {
+                seekbarContainer.visibility = View.VISIBLE
+            }
+            seekbar.visibility = View.VISIBLE
+            seekbar.max = duration
+            seekbar.progress = currentPosition
+            val currentTime = StringUtil.parseDuration("" + currentPosition)
+            elapsedTime.text = currentTime
+            val totalTimeStr = StringUtil.parseDuration("" + duration)
+            totalTime.text = totalTimeStr
+            (seekbar.layoutParams as LayoutParams).topMargin = -1 * seekbar.thumbOffset / 2
+            startCurrentPositionTimer()
+        }
+        displayTopBarWithAnimation()
+    }
+
+    override fun initView() {
+        super.initView()
+
+        initVolumeView()
+    }
+
+    fun initVolumeView(){
+        toggleVolumeButton = findViewById(R.id.volume)
+        toggleVolumeButton.setOnClickListener {
+            if(isVolumeOn) {
+                isVolumeOn = false
+                setVolumeLisener?.setVolume(1f)
+            } else {
+                isVolumeOn = true
+                setVolumeLisener?.setVolume(0f)
+            }
+        }
+    }
+
+    override fun inflateLayout() {
+        val apMediaController = findViewById<View>(OSUtil.getResourceId("reshet_media_controller")) as? ViewGroup
+        if (apMediaController == null) {
+            LayoutInflater.from(mContext).inflate(OSUtil.getLayoutResourceIdentifier("reshet_media_controller"), this, true)
+        }
     }
 
 }

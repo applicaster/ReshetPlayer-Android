@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/view_contianer"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/player_container"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="center"
+        android:tag="@string/fb_chat_container"
+        android:visibility="visible">
+
+    </RelativeLayout>
+
+<!--    <include layout="@layout/video_preloader" />-->
+
+    <include layout="@layout/ad_frame" />
+
+</RelativeLayout>

@@ -5,7 +5,7 @@ import android.util.Log
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import com.applicaster.activities.base.APBaseActivity
 import com.applicaster.atom.model.APAtomEntry.APAtomEntryPlayable
 import com.applicaster.model.APChannel
 import com.applicaster.model.APModel
@@ -15,21 +15,39 @@ import com.applicaster.plugin_manager.cast.CastPlugin
 import com.applicaster.plugin_manager.cast.ChromecastManager
 import com.applicaster.plugin_manager.playersmanager.Playable
 import com.applicaster.reshetplayer.defaultplayer.player.ApplicasterVideoPlayerContract
+import com.applicaster.reshetplayer.defaultplayer.player.wrapper.ReshetPlayerWrapper
 import java.util.*
 
-class ReshetPlayerActivity: AppCompatActivity() {
+class ReshetPlayerActivity: APBaseActivity() {
 
     companion object {
         const val PLAYABLE_KEY = "playable_key"
+        const val VIDEO_TIME = "video_time"
     }
 
     lateinit var playerViewContainer: ViewGroup
     lateinit var playerView: ReshetPlayerView
     lateinit var playable: Playable
 
+    protected var videoCurrentPosition = 0
+
+//    override fun onPause() {
+//        super.onPause()
+//        savePosition()
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        if(videoCurrentPosition > 0 && applicasterVideoPlayerContract != null) {
+//            restorePosition()
+//            playerView.playerView.start()
+//        }
+//    }
+
+
     protected var castPlugin: CastPlugin? = null
 
-    lateinit var applicasterVideoPlayerContract: ApplicasterVideoPlayerContract
+    var applicasterVideoPlayerContract: ApplicasterVideoPlayerContract? = null
 
     var playerConfig: BasePlayerConfiguration? = null
 
@@ -48,12 +66,24 @@ class ReshetPlayerActivity: AppCompatActivity() {
 
         getSecuredLink()
 
+        if (isActivityRestored) {
+            videoCurrentPosition = savedInstanceState!!.getInt(Player.SAVED_CURRENT_POSITION, 0)
+        }
+
     }
 
     fun initiliezed() {
-        applicasterVideoPlayerContract = ApplicasterVideoPlayerContract()
-        applicasterVideoPlayerContract.init(playable, this)
-        playerView = ReshetPlayerView(this, applicasterVideoPlayerContract.playerWrapper)
+        if(applicasterVideoPlayerContract != null) {
+            applicasterVideoPlayerContract?.removeInline(playerViewContainer)
+        }
+        applicasterVideoPlayerContract = StartHere()
+
+        applicasterVideoPlayerContract?.init(playable, this)
+        applicasterVideoPlayerContract?.playerWrapper = ReshetPlayerWrapper(this)
+        applicasterVideoPlayerContract?.playerWrapper?.setPlayableList(mutableListOf(playable))
+        applicasterVideoPlayerContract?.setVolumeController()
+
+        playerView = applicasterVideoPlayerContract?.playerWrapper!!.reshetPlayerView
 
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         playerViewContainer.addView(playerView, 0, layoutParams)
@@ -72,6 +102,11 @@ class ReshetPlayerActivity: AppCompatActivity() {
             playerView.playerView.stopPlayback()
             finish()
 
+        }
+
+        if(videoCurrentPosition > 0 && applicasterVideoPlayerContract != null) {
+            restorePosition()
+            playerView.playerView.start()
         }
     }
 
@@ -130,6 +165,20 @@ class ReshetPlayerActivity: AppCompatActivity() {
         val iv = ImageView(this)
         iv.setImageResource(R.drawable.no_video_found_bg)
         this.setContentView(iv)
+    }
+
+    fun savePosition() {
+        videoCurrentPosition = applicasterVideoPlayerContract!!.playerWrapper.getCurrentPosition()
+    }
+
+    fun restorePosition() {
+        applicasterVideoPlayerContract!!.playerWrapper.seekTo(videoCurrentPosition)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        savePosition()
+        outState.putInt(Player.SAVED_CURRENT_POSITION, videoCurrentPosition)
     }
 
 

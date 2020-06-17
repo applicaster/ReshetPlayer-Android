@@ -60,7 +60,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
         this.playerContainer = findViewById(R.id.player_container)
 
-        playerView.getVideoView().removeFromParent()
+        //playerView.getVideoView().removeFromParent()
         this.playerContainer.addView(playerView.getVideoView())
 
         setMediaController()
@@ -111,6 +111,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
                         // move to EVT_LINEAR_AD_STOP
                           adInProgress = false;
                         try {
+                            playerView.getVideoView().removeFromParent()
                             playerContainer.addView(playerView.getVideoView(), 0)
                         } catch (e: Exception) {
                             e.printStackTrace()
@@ -142,10 +143,6 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
             registerEvent(AMEventType.EVT_AD_CLICK, amEventListener)
         }
 
-        api?.initialize(AMInitParams(findViewById<View>(R.id.ad_video_frame), getArtimediaInitJsonBuilderParams()))
-    }
-
-    fun updateArtimedia() {
         api?.initialize(AMInitParams(findViewById<View>(R.id.ad_video_frame), getArtimediaInitJsonBuilderParams()))
     }
 

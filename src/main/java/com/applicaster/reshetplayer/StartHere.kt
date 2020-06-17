@@ -4,13 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.ViewGroup
-import com.applicaster.player.Player
 import com.applicaster.plugin_manager.hook.ApplicationLoaderHookUpI
 import com.applicaster.plugin_manager.hook.HookListener
 import com.applicaster.plugin_manager.playersmanager.Playable
 import com.applicaster.plugin_manager.playersmanager.PlayableConfiguration
 import com.applicaster.plugin_manager.playersmanager.PlayerContract
 import com.applicaster.reshetplayer.defaultplayer.player.ApplicasterVideoPlayerContract
+import com.applicaster.reshetplayer.defaultplayer.player.wrapper.ReshetPlayerWrapper
 import com.applicaster.reshetplayer.playercontroller.FullscreenCallback
 
 
@@ -34,6 +34,16 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
 
 
     override fun attachInline(videoContainerView: ViewGroup)  {
+        if (currentInline != null) {
+            currentInline?.stopInline()
+            currentInline?.removeInline(currentInline?.videoContainerView!!)
+        }
+
+        playerWrapper = ReshetPlayerWrapper(context!!)
+        this.mPlayableList = mutableListOf<Playable>(mPlayableList.first())
+        playerWrapper.setPlayableList(this.mPlayableList)
+        setVolumeController()
+
         super.attachInline(videoContainerView)
         setFullScreenCallback(this)
     }
@@ -48,6 +58,7 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
 
 
     override fun playInFullscreen(configuration: PlayableConfiguration?, requestCode: Int, context: Context) {
+
         val intent = Intent(context, ReshetPlayerActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         intent.putExtra(ReshetPlayerActivity.PLAYABLE_KEY, arrayOf(firstPlayable))
@@ -60,7 +71,10 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
     }
 
     override fun onGoToFullscreen(currPosition: Int) {
-
+        if (currentInline != null) {
+            currentInline?.stopInline()
+            currentInline?.removeInline(currentInline?.videoContainerView!!)
+        }
         playInFullscreen(playableConfiguration, 0, videoContainerView!!.context)
     }
 
@@ -101,6 +115,38 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
 
         //intent.putExtra(ReshetPlayer.NEED_TO_SEEK_START_TIME, shouldSeeKToVideoStartDate)
 
+    }
+
+
+    override fun init(appContext: Context) {
+        this.context = context
+
+        if (currentInline != null) {
+            currentInline?.stopInline()
+            currentInline?.removeInline(currentInline?.videoContainerView!!)
+        }
+    }
+
+    override fun init(playable: Playable, context: Context) {
+        this.context = context
+
+        if (currentInline != null) {
+            currentInline?.stopInline()
+            currentInline?.removeInline(currentInline?.videoContainerView!!)
+        }
+
+        this.mPlayableList = mutableListOf<Playable>(playable)
+    }
+
+    override fun init(playableList: MutableList<Playable>, context: Context) {
+        this.context = context
+
+        if (currentInline != null) {
+            currentInline?.stopInline()
+            currentInline?.removeInline(currentInline?.videoContainerView!!)
+        }
+
+        this.mPlayableList = playableList
     }
 }
 

@@ -21,7 +21,9 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
     var videoContainerView: ViewGroup? = null
     lateinit var playerWrapper: ReshetPlayerWrapper
 
-    private var playableList = mutableListOf<Playable>()
+    var context: Context? = null
+
+    var mPlayableList = mutableListOf<Playable>()
     var config: MutableMap<Any?, Any?>? = null
     var isOnHold = false
     var state: PlayerContract.State? = null
@@ -33,32 +35,38 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
     }
 
     override fun init(appContext: Context) {
+
+        if (currentInline != null) {
+            currentInline?.stopInline()
+            currentInline?.removeInline(currentInline?.videoContainerView!!)
+        }
+
         playerWrapper = ReshetPlayerWrapper(appContext)
     }
 
     override fun init(playable: Playable, context: Context) {
+
         if (currentInline != null) {
             currentInline?.stopInline()
             currentInline?.removeInline(currentInline?.videoContainerView!!)
         }
 
         playerWrapper = ReshetPlayerWrapper(context)
-        this.playableList = mutableListOf<Playable>(playable)
-        playerWrapper.setPlayableList(this.playableList)
+        this.mPlayableList = mutableListOf<Playable>(playable)
+        playerWrapper.setPlayableList(this.mPlayableList)
         setVolumeController()
-
-//        this.playableList = mutableListOf<Playable>(playable)
     }
 
     override fun init(playableList: MutableList<Playable>, context: Context) {
+
         if (currentInline != null) {
             currentInline?.stopInline()
             currentInline?.removeInline(currentInline?.videoContainerView!!)
         }
 
         playerWrapper = ReshetPlayerWrapper(context)
-        this.playableList = playableList
-        playerWrapper.setPlayableList(this.playableList)
+        this.mPlayableList = playableList
+        playerWrapper.setPlayableList(this.mPlayableList)
         setVolumeController()
     }
 
@@ -75,7 +83,7 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
 
     override fun isPlayerPlaying() = playerWrapper.isPlaying()
 
-    override fun getFirstPlayable() = playableList.first()
+    override fun getFirstPlayable() = mPlayableList.first()
 
     override fun getPluginConfigurationParams() = config
 
@@ -87,7 +95,7 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
         playerWrapper.setVolume(volume)
     }
 
-    override fun getPlayableList(): MutableList<Playable> = playableList
+    override fun getPlayableList(): MutableList<Playable> = mPlayableList
 
     override fun play(configuration: PlayableConfiguration?) {
         playerWrapper.start()
@@ -158,6 +166,7 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
  */
 
     override fun attachInline(videoContainerView: ViewGroup) {
+
         if (fullscreenDialog?.isShowing == true) {
             (playerWrapper.playerView?.parent as? ViewGroup?)?.let { p ->
                 p.removeView(playerWrapper.playerView)
@@ -188,11 +197,11 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
     }
 
     override fun playInline(configuration: PlayableConfiguration?) {
-//        (configuration?.customConfiguration?.get("DISPLAY_NATIVE_CONTROLS") as? Boolean?)?.let {
-//            playerWrapper.setDisplayControls(it)
-//        }
-//        playerWrapper.setDisplayControls(false)
-//        playerWrapper.start()
+        (configuration?.customConfiguration?.get("DISPLAY_NATIVE_CONTROLS") as? Boolean?)?.let {
+            playerWrapper.setDisplayControls(it)
+        }
+        playerWrapper.setDisplayControls(false)
+        playerWrapper.start()
     }
 
     override fun stopInline() {

@@ -14,6 +14,7 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import com.applicaster.atom.model.APAtomEntry.APAtomEntryPlayable
 import com.applicaster.plugin_manager.playersmanager.Playable
+import com.applicaster.plugin_manager.playersmanager.internal.PlayersManager
 import com.applicaster.reshetplayer.defaultplayer.player.ReshetPlayerViewI
 import com.applicaster.reshetplayer.helpers.*
 import com.applicaster.reshetplayer.kantar.KANTAR_ATTRIBUTE_STREAM_KEY
@@ -42,13 +43,6 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     val playerContainer: ViewGroup
 
-    /*artimedia*/
-    private var api: AMSDKAPI? = null
-    private var positionTimer: Subscription? = null
-    private var adInProgress = false
-    private var mAdInitialized = false //determined if the SDK was initialized successfully
-
-
     /*kantar stream*/
     private var stream: Stream? = null
 
@@ -60,12 +54,15 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
         this.playerContainer = findViewById(R.id.player_container)
 
-        //playerView.getVideoView().removeFromParent()
         this.playerContainer.addView(playerView.getVideoView())
+
+        mPlayable = playerView.getPlayable()
+
+        startVideo()
 
         setMediaController()
 
-        getActivity()!!.getLifecycle().addObserver(this)
+        getActivity()!!.lifecycle.addObserver(this)
 
         playerContainer.setOnClickListener {
             mCustomMediaController?.toggleMediaControllerState()
@@ -73,176 +70,44 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     }
 
-
-
-
-
-
-    fun initArtimedia(){
-        val artimediaSiteName = PluginParams.artimediaSiteName
-        val showAdsOnPayed = PluginParams.showAdsOnPayed
-
-        // prepare json object
-
-        // prepare json object
-        val params = JSONObject()
-        try {
-            params.put("siteKey", artimediaSiteName)
-            params.put("videoID", mPlayable?.getPlayableId())
-            params.put("isLive", mPlayable?.isLive() ?: false|| mPlayable?.isDvr() ?: false)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
-
-        val amEventListener = object: AMEventListener {
-            override fun onAMSDKEvent(amEventType: AMEventType, o: Any?) {
-                Log.d(TAG, amEventType.name)
-                when (amEventType) {
-                    AMEventType.EVT_INIT_COMPLETE ->                 //play video after init finished
-                        if (o as Boolean) {
-                            Log.d(TAG, "sdk initialized")
-                            mAdInitialized = o
-                        }
-                    AMEventType.EVT_PAUSE_REQUEST -> {
-                        pauseVideo()
-                        playerContainer.removeView(playerView.getVideoView())
-                    }
-                    AMEventType.EVT_RESUME_REQUEST -> {
-                        // move to EVT_LINEAR_AD_STOP
-                          adInProgress = false;
-                        try {
-                            playerView.getVideoView().removeFromParent()
-                            playerContainer.addView(playerView.getVideoView(), 0)
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                        startVideo()
-                    }
-                    AMEventType.EVT_AD_SHOW -> Log.d(TAG, "ad is in progress")
-                    AMEventType.EVT_AD_MISSED -> adInProgress = false
-                    AMEventType.EVT_LINEAR_AD_START -> adInProgress = true
-                    AMEventType.EVT_LINEAR_AD_STOP -> adInProgress = false
-                    AMEventType.EVT_SESSION_END -> adInProgress = false
-                }
-            }
-
-        }
-
-        api = AMSDK.getVideoAdvAPI().apply {
-            registerEvent(AMEventType.EVT_INIT_COMPLETE, amEventListener)
-            registerEvent(AMEventType.EVT_PAUSE_REQUEST, amEventListener)
-            registerEvent(AMEventType.EVT_RESUME_REQUEST, amEventListener)
-            registerEvent(AMEventType.EVT_LINEAR_AD_START, amEventListener)
-            registerEvent(AMEventType.EVT_LINEAR_AD_PAUSE, amEventListener)
-            registerEvent(AMEventType.EVT_LINEAR_AD_RESUME, amEventListener)
-            registerEvent(AMEventType.EVT_LINEAR_AD_STOP, amEventListener)
-            registerEvent(AMEventType.EVT_AD_MISSED, amEventListener)
-            registerEvent(AMEventType.EVT_AD_SHOW, amEventListener)
-            registerEvent(AMEventType.EVT_AD_HIDE, amEventListener)
-            registerEvent(AMEventType.EVT_SESSION_END, amEventListener)
-            registerEvent(AMEventType.EVT_AD_CLICK, amEventListener)
-        }
-
-        api?.initialize(AMInitParams(findViewById<View>(R.id.ad_video_frame), getArtimediaInitJsonBuilderParams()))
-    }
-
-    private fun getArtimediaInitJsonBuilderParams(): AMInitJsonBuilder? {
-        val initJsonBuilder = AMInitJsonBuilder(this.context.getApplicationContext())
-        if (mPlayable!!.getContentVideoURL() != null) {
-            try {
-                initJsonBuilder.putPlacementSiteKey(PluginParams.artimediaSiteName)
-                        .putPlacementCategory(mPlayable!!.getPlayableId())
-                        .putPlacementIsLive(mPlayable!!.isLive())
-                        .putContentId(mPlayable!!.getPlayableId())
-                        .putContentVideoUrl(URLEncoder.encode(mPlayable!!.getContentVideoURL(), "UTF-8"))
-                if (!mPlayable!!.isLive() && mPlayable!! is APAtomEntryPlayable) {
-//                             initJsonBuilder.putContentDuration();
-                    if (mPlayable!!.getContentType() != null) {
-                        initJsonBuilder.putContentType(mPlayable!!.getContentType())
-                    }
-                    if (mPlayable!!.getContentProgramName() != null) {
-                        initJsonBuilder.putContentProgramName(mPlayable!!.getContentProgramName())
-                    }
-                    if (mPlayable!!.getContentSeason() != null) {
-                        initJsonBuilder.putContentSeason(mPlayable!!.getContentSeason())
-                    }
-                    if (mPlayable!!.getContentAudience() != null) {
-                        initJsonBuilder.putContentTargetAudience(mPlayable!!.getContentAudience())
-                    }
-                    if (mPlayable!!.getContentEpisode() != null) {
-                        initJsonBuilder.putContentEpisode(mPlayable!!.getContentEpisode())
-                    }
-                    if (mPlayable!!.getContentGenre() != null) {
-                        initJsonBuilder.putContentGenre(mPlayable!!.getContentGenre())
-                    }
-                }
-
-                //  .putSubscriberId("87c1363b-70a9-4c69-ad01-7af8c13ddc87")
-                //  .putSubscriberPlan("family")
-            } catch (e: UnsupportedEncodingException) {
-                e.printStackTrace()
-            }
-        }
-        return initJsonBuilder
-    }
-
-
     fun setPlayable(playable: Playable) {
         mPlayable = playable
-        initArtimedia()
+        ArtimediaManager.init(playable, findViewById(R.id.ad_video_frame), playerView, object : ArtimediaListner {
+            override fun requestPauseConent() = pauseVideo()
+            override fun requestResumeContant() = startVideo()
+
+        })
 
         updateMediaController()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onResume() {
-        if (api != null && adInProgress) {
-            api?.resumeAd()
-        }
         Log.d(TAG, "activity onResume")
+        ArtimediaManager.resumeAd()
     }
 
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     fun onPause() {
-        if (api != null && adInProgress) {
-            api?.pauseAd()
-        }
         Log.d(TAG, "activity onPause")
+        ArtimediaManager.pasueAd()
         pauseVideo()
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
-        dismissTimer()
-        if (api != null) {
-            api?.destroy()
-        }
-        Log.d(TAG, "sdk destroyed")
+        Log.d(TAG, "activity onDestroy")
+        playerView.stopPlayback()
+       ArtimediaManager.relese()
     }
 
     fun startVideo() {
         mCustomMediaController?.show()
         playerView.start()
-        if (!adInProgress) {
-            //super.startVideo()
-            Log.d(TAG, "starting video")
-            if (mAdInitialized && api != null && (positionTimer == null || positionTimer!!.isUnsubscribed())) {
-                api?.updateVideoState(AMContentState.VIDEO_STATE_PLAY)
-                positionTimer = Observable
-                        .interval(1, TimeUnit.SECONDS)
-                        .subscribeOn(Schedulers.io())
-                        .doOnNext { sec: Long? ->
-                            var pos = Math.ceil(playerView.getCurrentPosition() / 1000.toDouble()).toFloat()
-                            if (mPlayable?.isDvr() ?: false || mPlayable?.isLive() ?: false) {
-                                pos = Math.ceil((playerView.getCurrentDate() ?: 0) / 1000.toDouble()).toFloat()
-                            }
-                            if (api != null && pos > 0) {
-                                api!!.updateVideoTime(pos)
-                            }
-                        }.subscribe()
-            }
-        }
+
+        ArtimediaManager.onVideoStarted()
+
         if (mPlayable!!.isLive()) {
             startKantarStream()
         }
@@ -251,26 +116,14 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     fun pauseVideo() {
         playerView.pause()
         Log.d(TAG, "pausing video")
-        dismissTimer()
-        api?.updateVideoState(AMContentState.VIDEO_STATE_PAUSE)
         stopKantarStream()
     }
 
     fun stopVideo() {
-//        super.stopVideo()
         playerView.stopPlayback()
-        Log.d(TAG, "stopping video")
-        if (api != null && !adInProgress) {
-            api!!.updateVideoState(AMContentState.VIDEO_STATE_STOP)
-        }
+
     }
 
-    private fun dismissTimer() {
-        if (positionTimer != null && !positionTimer!!.isUnsubscribed()) {
-            positionTimer!!.unsubscribe()
-            Log.d(TAG, "dismissed timer")
-        }
-    }
 
     private fun startKantarStream() {
         stopKantarStream()

@@ -36,6 +36,8 @@ import java.util.*
 
 open class ApplicasterPlayerWrapper(context: Context) : PlayerViewWrapper(context), ReshetPlayerViewI {
 
+    private var playable: Playable? = null
+
     private var playlist: List<Uri>? = null
     private lateinit var exopPlayer: APExoPlayer
     private var onPreparedListener: APVideoViewWrapper.OnPreparedListener? = null
@@ -67,7 +69,7 @@ open class ApplicasterPlayerWrapper(context: Context) : PlayerViewWrapper(contex
         // This is the MediaSource representing the content media.
         contentMediaSource = createMediaSource(uri)
         exopPlayer.setMediaSource(contentMediaSource)
-        exopPlayer.prepare(true)
+        exopPlayer.prepare(false)
     }
 
     fun setPlayList(playlist: List<Uri>) {
@@ -276,6 +278,7 @@ open class ApplicasterPlayerWrapper(context: Context) : PlayerViewWrapper(contex
         (playable as? APAtomEntry.APAtomEntryPlayable?)?.let { entry ->
             setVideoURI(Uri.parse(entry.contentVideoURL))
         }
+        this.playable = playable
     }
 
     open fun setPlayableList(playableList: MutableList<Playable>) {
@@ -292,9 +295,14 @@ open class ApplicasterPlayerWrapper(context: Context) : PlayerViewWrapper(contex
             Uri.EMPTY
         }.filter { p -> p != Uri.EMPTY }
         setPlayList(urilist)
+        this.playable = playableList.first()
     }
 
     override fun getVideoView(): View {
         return exopPlayer.playerView!!
+    }
+
+    override fun getPlayable(): Playable {
+        return playable!!
     }
 }

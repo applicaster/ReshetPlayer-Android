@@ -71,7 +71,7 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
     }
 
     fun setVolumeController(){
-        playerWrapper.reshetPlayerView.setVolumeCallback(object : SetVolumeCallback{
+        playerWrapper.reshetPlayerView?.setVolumeCallback(object : SetVolumeCallback{
             override fun setVolume(volume: Float) {
                 playerWrapper.setVolume(volume)
             }
@@ -88,7 +88,7 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
     override fun getPluginConfigurationParams() = config
 
     fun setFullScreenCallback(fullscreenCallback: FullscreenCallback) {
-        playerWrapper.reshetPlayerView.setFullScreenCallBack(fullscreenCallback)
+        playerWrapper.reshetPlayerView?.setFullScreenCallBack(fullscreenCallback)
     }
 
     fun setVolume(volume: Float) {

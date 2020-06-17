@@ -83,7 +83,7 @@ class ReshetPlayerActivity: APBaseActivity() {
         applicasterVideoPlayerContract?.playerWrapper?.setPlayableList(mutableListOf(playable))
         applicasterVideoPlayerContract?.setVolumeController()
 
-        playerView = applicasterVideoPlayerContract?.playerWrapper!!.reshetPlayerView
+        playerView = applicasterVideoPlayerContract?.playerWrapper!!.reshetPlayerView!!
 
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         playerViewContainer.addView(playerView, 0, layoutParams)

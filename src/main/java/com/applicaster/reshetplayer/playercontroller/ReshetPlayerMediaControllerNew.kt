@@ -9,11 +9,14 @@ import android.widget.SeekBar
 import android.widget.TextView
 import com.applicaster.player.controller.MidrollView
 import com.applicaster.reshetplayer.R
-import com.applicaster.reshetplayer.helpers.isDvr
 import com.applicaster.util.OSUtil
 import com.applicaster.util.StringUtil
 import java.util.*
 import java.util.concurrent.TimeUnit
+
+enum class ContollerType {
+    basic, full_screen
+}
 
 open class ReshetPlayerMediaControllerNew(context: Context?, attrs: AttributeSet?) : APMediaController(context, attrs) {
 

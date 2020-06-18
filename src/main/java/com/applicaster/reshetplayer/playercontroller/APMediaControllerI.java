@@ -20,6 +20,8 @@ public interface APMediaControllerI {
 	public void setDefaultVisibility();
 	public void setFullScreenCallback(FullscreenCallback fullScreenCallback);
 	public void setVolumeCallback(SetVolumeCallback setVolumeCallback);
+
+	public void setControllerType(ContollerType controllerType);
 	
 	public MidrollView getMidrollImageView();
 

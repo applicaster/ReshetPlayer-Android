@@ -16,6 +16,7 @@ import com.applicaster.plugin_manager.cast.ChromecastManager
 import com.applicaster.plugin_manager.playersmanager.Playable
 import com.applicaster.reshetplayer.defaultplayer.player.ApplicasterVideoPlayerContract
 import com.applicaster.reshetplayer.defaultplayer.player.wrapper.ReshetPlayerWrapper
+import com.applicaster.reshetplayer.playercontroller.ContollerType
 import java.util.*
 
 class ReshetPlayerActivity: APBaseActivity() {
@@ -84,6 +85,8 @@ class ReshetPlayerActivity: APBaseActivity() {
         applicasterVideoPlayerContract?.setVolumeController()
 
         playerView = applicasterVideoPlayerContract?.playerWrapper!!.reshetPlayerView!!
+
+        playerView.setControllerType(ContollerType.full_screen)
 
         val layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
         playerViewContainer.addView(playerView, 0, layoutParams)

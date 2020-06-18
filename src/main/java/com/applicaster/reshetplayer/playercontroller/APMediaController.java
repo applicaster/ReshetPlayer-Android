@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.CaptioningManager;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
@@ -37,6 +38,7 @@ import com.applicaster.player.wrappers.PlayerView;
 import com.applicaster.plugin_manager.cast.CastPlugin;
 import com.applicaster.plugin_manager.cast.ChromecastManager;
 import com.applicaster.plugin_manager.playersmanager.Playable;
+import com.applicaster.reshetplayer.R;
 import com.applicaster.session.SessionStorage;
 import com.applicaster.util.AppData;
 import com.applicaster.util.FacebookUtil;
@@ -67,6 +69,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+
 public class APMediaController extends RelativeLayout implements APMediaControllerI {
 
 	protected PlayerView player;
@@ -83,6 +87,8 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 	protected ImageView watch_checkbox, watch_close_button, watchButton;
 	protected View watch_checkbox_label;
 	protected boolean isLive;
+	protected ContollerType contollerType = ContollerType.basic;
+
 
 	protected Timer hideTimer,currentPositionTimer,postWatchActionTimer;
 
@@ -124,6 +130,8 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 
 	protected FullscreenCallback fullScreenCallback;
 
+	protected View buttomBarContainer;
+
 
 	private static final int CUSTOM_HIDE_TIME = 8000;
 	private static final int SOCIAL_HIDE_TIME = 8000;
@@ -149,6 +157,7 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 		initFBShareBtns();
 		initFullScreenBtns();
 		setupAccessibilityIdentifiers();
+		setupButtomBar();
 	}
 
 	/**
@@ -184,6 +193,7 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 
 	protected void initPlayPauseBtn() {
 		playPauseBtn = (ImageView) findViewById(OSUtil.getResourceId("play_pause_btn"));
+		playPauseBtn = findViewById(R.id.play_pause_btn);
 		playPauseBtn.setOnClickListener(togglePlay);
 	}
 
@@ -404,6 +414,28 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 
 	}
 
+	public void setupButtomBar() {
+		this.buttomBarContainer = findViewById(R.id.bottom_chrome);
+		setControllerType(this.contollerType);
+	}
+
+	@Override
+	public void setControllerType(ContollerType controllerType) {
+		this.contollerType = controllerType;
+		if(buttomBarContainer != null && controllerType != null) {
+			switch (controllerType) {
+				case basic: {
+					buttomBarContainer.setVisibility(View.VISIBLE);
+					break;
+				}
+				case full_screen: {
+					buttomBarContainer.setVisibility(View.GONE);
+					break;
+				}
+			}
+		}
+	}
+
 
 	private void initWatchActionBtn() {
 
@@ -567,7 +599,14 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 
 	protected void displayTopBarWithAnimation() {
 		this.setVisibility(View.VISIBLE);
-		Animation animation = new TranslateAnimation(0, 0,  -100,0);
+
+
+		Animation animation;
+		switch (contollerType) {
+			case basic: 		animation = new AlphaAnimation(0, 1); break;
+			case full_screen:   animation = new TranslateAnimation(0, 0,  -100,0); break;
+			default:  			animation = new AlphaAnimation(0, 1); break;
+		}
 		animation.setDuration(300);
 		animation.setAnimationListener(new AnimationListener() {
 
@@ -607,7 +646,14 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 
 	public void hide(){
 
-		Animation animation = new TranslateAnimation(0, 0, 0,-100);
+		Animation animation;
+
+		switch (contollerType) {
+			case basic: 		animation = new AlphaAnimation(1, 0); break;
+			case full_screen:   animation = new TranslateAnimation(0, 0,  0,-100); break;
+			default:  			animation = new AlphaAnimation(1, 0); break;
+		}
+
 		animation.setDuration(300);
 		animation.setAnimationListener(new AnimationListener() {
 

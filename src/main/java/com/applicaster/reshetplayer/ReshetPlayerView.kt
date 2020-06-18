@@ -12,25 +12,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.applicaster.atom.model.APAtomEntry.APAtomEntryPlayable
 import com.applicaster.plugin_manager.playersmanager.Playable
-import com.applicaster.plugin_manager.playersmanager.internal.PlayersManager
 import com.applicaster.reshetplayer.defaultplayer.player.ReshetPlayerViewI
-import com.applicaster.reshetplayer.helpers.*
 import com.applicaster.reshetplayer.kantar.KANTAR_ATTRIBUTE_STREAM_KEY
 import com.applicaster.reshetplayer.kantar.kantarSensor
 import com.applicaster.reshetplayer.playercontroller.*
 import de.spring.mobile.Stream
-import net.artimedia.artisdk.api.*
-import org.json.JSONException
-import org.json.JSONObject
-import rx.Observable
-import rx.Subscription
-import rx.schedulers.Schedulers
-import java.io.UnsupportedEncodingException
-import java.net.URLEncoder
 import java.util.*
-import java.util.concurrent.TimeUnit
+import com.applicaster.reshetplayer.playercontroller.ContollerType
 
 
 class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : RelativeLayout(context), LifecycleObserver {
@@ -42,6 +31,8 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     var mPlayable : Playable? = null
 
     val playerContainer: ViewGroup
+
+    private var controllerType: ContollerType = ContollerType.basic
 
     /*kantar stream*/
     private var stream: Stream? = null
@@ -58,8 +49,6 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
         mPlayable = playerView.getPlayable()
 
-        startVideo()
-
         setMediaController()
 
         getActivity()!!.lifecycle.addObserver(this)
@@ -67,6 +56,8 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         playerContainer.setOnClickListener {
             mCustomMediaController?.toggleMediaControllerState()
         }
+
+        startVideo()
 
     }
 
@@ -156,15 +147,18 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     protected fun setMediaController() {
 
-        val params = LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
-        params.addRule(ALIGN_PARENT_TOP)
-        mCustomMediaController = ReshetPlayerMediaControllerNew(getActivity(), null)
-
-        playerContainer.addView(mCustomMediaController as APMediaController?, params)
+        mCustomMediaController = findViewById<ReshetPlayerMediaControllerNew>(R.id.reshet_media_controller_new)
 
        updateMediaController()
 
         mCustomMediaController!!.initView()
+
+
+    }
+
+    fun setControllerType(controllerType: ContollerType) {
+        this.controllerType = controllerType
+        mCustomMediaController?.setControllerType(controllerType)
     }
 
     fun updateMediaController(){
@@ -174,6 +168,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         mCustomMediaController!!.setPlayableItem(mPlayable)
         mCustomMediaController!!.setFullScreenCallback(fullscreenCallback)
         mCustomMediaController!!.setVolumeCallback(setVolumeCallback)
+        mCustomMediaController!!.setControllerType(controllerType)
     }
 
     private var fullscreenCallback: FullscreenCallback? = null

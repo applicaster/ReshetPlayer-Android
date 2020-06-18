@@ -13,6 +13,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import rx.Observable
 import rx.Subscription
+import rx.android.schedulers.AndroidSchedulers
 import rx.schedulers.Schedulers
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
@@ -164,7 +165,7 @@ object ArtimediaManager: ArtimediaActions {
     }
 
     fun init(playable: Playable, adsContainer: View, playerView: PlayerView, listner: ArtimediaListner) {
-        relese()
+       // relese()
 
         this.playable = playable
         this.adsContainer = adsContainer
@@ -175,10 +176,11 @@ object ArtimediaManager: ArtimediaActions {
     }
 
     override fun relese(){
+        dismissTimer()
         artimediaApi?.pauseAd()
         artimediaApi?.stopAdBreak()
         artimediaApi?.destroy()
-        dismissTimer()
+        artimediaApi = null
     }
 
     override fun resumeAd() {
@@ -197,7 +199,8 @@ object ArtimediaManager: ArtimediaActions {
                 artimediaApi?.updateVideoState(AMContentState.VIDEO_STATE_PLAY)
                 positionTimer = Observable
                         .interval(1, TimeUnit.SECONDS)
-                        .subscribeOn(Schedulers.io())
+                        .subscribeOn(AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .doOnNext { sec: Long? ->
                             var pos = Math.ceil(playerView?.getCurrentPosition()!! / 1000.toDouble()).toFloat()
                             if (playable?.isDvr() ?: false || playable?.isLive() ?: false) {

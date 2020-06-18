@@ -83,6 +83,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     fun onPause() {
         Log.d(TAG, "activity onPause")
         ArtimediaManager.pasueAd()
+
         pauseVideo()
     }
 
@@ -107,6 +108,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     fun pauseVideo() {
         playerView.pause()
         Log.d(TAG, "pausing video")
+        ArtimediaManager.onVideoPause()
         stopKantarStream()
     }
 

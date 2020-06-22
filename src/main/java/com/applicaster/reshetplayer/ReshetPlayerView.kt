@@ -12,14 +12,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
+import androidx.viewpager.widget.ViewPager
 import com.applicaster.plugin_manager.playersmanager.Playable
+import com.applicaster.reactnative.presenter.ReactNativePresenter
 import com.applicaster.reshetplayer.defaultplayer.player.ReshetPlayerViewI
 import com.applicaster.reshetplayer.kantar.KANTAR_ATTRIBUTE_STREAM_KEY
 import com.applicaster.reshetplayer.kantar.kantarSensor
 import com.applicaster.reshetplayer.playercontroller.*
 import de.spring.mobile.Stream
 import java.util.*
-import com.applicaster.reshetplayer.playercontroller.ContollerType
 
 
 class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : RelativeLayout(context), LifecycleObserver {
@@ -36,6 +37,8 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     /*kantar stream*/
     private var stream: Stream? = null
+
+    private lateinit var presentSinglePageListener: ViewPager.OnPageChangeListener
 
 
     init {
@@ -76,6 +79,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     fun onResume() {
         Log.d(TAG, "activity onResume")
         ArtimediaManager.resumeAd()
+        startVideo()
     }
 
 
@@ -114,7 +118,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     fun stopVideo() {
         playerView.stopPlayback()
-
+        ArtimediaManager.onVideoStop()
     }
 
 
@@ -187,8 +191,81 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         updateMediaController()
     }
 
+    fun onStopPlayback(){
+        ArtimediaManager.onVideoStop()
+        ArtimediaManager.relese()
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        this.pauseVideo()
+
+        val viewPager = this.findParent(ViewPager::class.java)
+        if (viewPager != null) {
+            viewPager.removeOnPageChangeListener(presentSinglePageListener)
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        this.startVideo()
+
+        val viewPager = this.findParent(ViewPager::class.java)
+        if (viewPager != null) {
+            // If the component is on a page in a ViewPager, it should only be rendered, when it's page is selected
+            presentSinglePageListener = viewPager.presentSinglePageListener(this, this)
+            viewPager.addOnPageChangeListener(presentSinglePageListener)
+        }
+    }
+
 }
 
 fun View.removeFromParent(){
     (this.parent as? ViewGroup)?.removeView(this)
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T> View.findParent(classType: Class<T>): T? {
+    var parent = this.parent
+    while (parent != null && (parent.javaClass != classType))
+        parent = parent.parent
+    return parent as? T
+}
+
+fun ViewPager.horizontallyInPage(v: View, position: Int): Boolean {
+    val outArray: IntArray = intArrayOf(0, 0)
+    this.getLocationOnScreen(outArray)
+    for (i in 0..(this.childCount - 1)) {
+        val c = this.getChildAt(i)
+        //val defaultIndex: Int = (this.adapter as? TabSwipePagerAdapter)?.defaultIndex ?: 0
+        val defaultIndex = 1
+        if (v.isChildOf(c)) {
+            return (c.x.toInt() == (position - defaultIndex) * this.width)
+        }
+    }
+    return false
+}
+
+fun View.isChildOf(candidateParent: View): Boolean {
+    var parent = this.parent
+    while (parent != null && parent != candidateParent)
+        parent = parent.parent
+    return parent == candidateParent
+}
+
+fun ViewPager.presentSinglePageListener(view: View, reshetPlayerView: ReshetPlayerView) = object : ViewPager.OnPageChangeListener {
+
+    override fun onPageScrollStateChanged(state: Int) = Unit
+
+    override fun onPageScrolled(position: Int, offset: Float, offsetPixels: Int) {
+
+    }
+
+    override fun onPageSelected(position: Int) {
+        if (!horizontallyInPage(view, position)) {
+            reshetPlayerView.pauseVideo()
+        } else {
+            reshetPlayerView.startVideo()
+        }
+    }
 }

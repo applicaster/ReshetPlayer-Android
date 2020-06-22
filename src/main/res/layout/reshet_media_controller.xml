@@ -195,7 +195,7 @@
         android:layout_below="@+id/topPannel"
         android:layout_marginRight="3dp"
         android:layout_marginTop="3dp"
-        android:background="@drawable/capture_duration_bg"
+        android:background="@color/transparent"
         android:paddingBottom="5dp"
         android:paddingLeft="14dp"
         android:paddingRight="14dp"

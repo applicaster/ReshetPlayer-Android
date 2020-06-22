@@ -55,8 +55,6 @@ import com.applicaster.util.facebook.permissions.APPermissionsType;
 import com.applicaster.util.facebook.share.model.FBAction;
 import com.applicaster.util.facebook.share.model.FBShare;
 import com.applicaster.util.share.ShareUtils;
-import com.applicaster.util.ui.APVideoViewWrapper;
-import com.applicaster.util.ui.FacebookDrawer;
 import com.applicaster.util.ui.ShareDialog;
 import com.applicaster.util.ui.ShareDialog.ShareDialogListener;
 import com.applicaster.util.ui.ShareDialog.ShareTypes;
@@ -154,7 +152,6 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 		initPlayerOffButton();
 		initWatchActionBtn();
 		initCastButton();
-		initFBShareBtns();
 		initFullScreenBtns();
 		setupAccessibilityIdentifiers();
 		setupButtomBar();
@@ -344,54 +341,7 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 		}
 	}
 	
-	
-	protected void initFBShareBtns() {
-		actionSelector = findViewById(OSUtil.getResourceId("action_selector"));
-		if (isSocialbarEnabled){
-			if(OSUtil.isSmallScreen(mContext)){
-				fbSharebtn.setVisibility(View.GONE);
-				findViewById(OSUtil.getResourceId("share_btn_padding")).setVisibility(View.GONE);
-			}
-			fbSharebtn = (ImageView) findViewById(OSUtil.getResourceId("share"));
-			fbSharebtn.setOnClickListener(new OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					HashMap<String,String> params = new HashMap<String, String>(1);
-					params.put(AnalyticsAgentUtil.FB_URL, socialData.objectUrl);
-					AnalyticsAgentUtil.logEvent(AnalyticsAgentUtil.FB_SP_SHARE,params);
 
-					postFeed();					
-				}
-			});
-
-
-			initWatchDialog();
-
-			selectedAction = (ImageView) findViewById(OSUtil.getResourceId("selected_action"));
-
-			if(!isFbOptedIn()){
-				selectedAction.setImageResource(OSUtil.getDrawableResourceIdentifier("fb_eye_off"));
-			}			
-			actionSelector.setOnClickListener(new OnClickListener() {
-
-				@Override
-				public void onClick(View v) {
-					handleFbActionState();
-
-				}
-			});
-			facebookFeedback = (TextView) mContext.findViewById(OSUtil.getResourceId("feedback"));
-		}
-		else{
- 			if (actionSelector != null){
- 				actionSelector.setVisibility(View.GONE);
- 			}
- 		}
-		commentButton = (ImageView) findViewById(OSUtil.getResourceId("comment"));
-		if(commentButton != null){
-			commentButton.setOnClickListener( commentClickListener);
-		}
-	}
 
 	private void initFullScreenBtns() {
 		fullScreenBtn = (ImageView) findViewById(OSUtil.getResourceId("fullscreen"));
@@ -809,30 +759,6 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 	};
 
 
-	protected OnClickListener commentClickListener = new OnClickListener() {
-		@Override
-		public void onClick(View v) {
-			// Make sure we have a valid
-			FacebookUtil.updateTokenIfNeeded(mContext, APPermissionsType.Player, new FBAuthoriziationListener() {
-				@Override
-				public void onError(Exception error) {
-
-				}
-
-				@Override
-				public void onSuccess() {
-					openPostsBox();
-				}
-
-				@Override
-				public void onCancel() {
-
-				}
-			});
-
-		}
-	};
-
 	protected OnClickListener toggleRecord = new OnClickListener() {
 
 		@Override
@@ -1233,11 +1159,6 @@ public class APMediaController extends RelativeLayout implements APMediaControll
 			postAction(watchAction);
 		}
 
-	}
-
-	protected void openPostsBox(){
-		FacebookDrawer.openPostsBox(mContext,socialData.fbObjectId);
-		hide();
 	}
 
 

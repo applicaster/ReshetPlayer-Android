@@ -184,11 +184,15 @@ object ArtimediaManager: ArtimediaActions {
     }
 
     override fun resumeAd() {
-        artimediaApi?.resumeAd()
+        if(adInProgress) {
+            artimediaApi?.resumeAd()
+        }
     }
 
     override fun pasueAd() {
-        artimediaApi?.pauseAd()
+        if(adInProgress) {
+            artimediaApi?.pauseAd()
+        }
     }
 
     override fun onVideoStarted() {

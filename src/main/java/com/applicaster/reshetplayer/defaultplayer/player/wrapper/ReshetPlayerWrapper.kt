@@ -43,7 +43,6 @@ class ReshetPlayerWrapper(val context: Context) : ApplicasterPlayerWrapper(conte
     override fun setPlayableList(playableList: MutableList<Playable>) {
         super.setPlayableList(playableList)
 
-        reshetPlayerView?.removeFromParent()
         reshetPlayerView = ReshetPlayerView(context, this)
 
         reshetPlayerView?.setPlayable(playableList.first())

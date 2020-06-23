@@ -3,6 +3,7 @@ package com.applicaster.reshetplayer
 import android.os.Bundle
 import android.util.Log
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import com.applicaster.activities.base.APBaseActivity
@@ -55,6 +56,8 @@ class ReshetPlayerActivity: APBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.reshet_activity)
+
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         playerViewContainer = findViewById(R.id.player_view_contianer)
 

@@ -79,7 +79,10 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     fun onResume() {
         Log.d(TAG, "activity onResume")
         ArtimediaManager.resumeAd()
-        startVideo()
+        if(!ArtimediaManager.isAdInProgress()) {
+            startVideo()
+        }
+
     }
 
 
@@ -198,7 +201,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        this.pauseVideo()
+        this.onPause()
 
         val viewPager = this.findParent(ViewPager::class.java)
         if (viewPager != null) {
@@ -208,7 +211,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
-        this.startVideo()
+        this.onResume()
 
         val viewPager = this.findParent(ViewPager::class.java)
         if (viewPager != null) {
@@ -263,9 +266,9 @@ fun ViewPager.presentSinglePageListener(view: View, reshetPlayerView: ReshetPlay
 
     override fun onPageSelected(position: Int) {
         if (!horizontallyInPage(view, position)) {
-            reshetPlayerView.pauseVideo()
+            reshetPlayerView.onPause()
         } else {
-            reshetPlayerView.startVideo()
+            reshetPlayerView.onResume()
         }
     }
 }

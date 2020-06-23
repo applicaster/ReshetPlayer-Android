@@ -206,6 +206,7 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
 
     override fun stopInline() {
         playerWrapper.stopPlayback()
+        //playerWrapper.reshetPlayerView?.onStopPlayback()
     }
 
     override fun pauseInline() {

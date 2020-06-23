@@ -26,6 +26,7 @@ interface ArtimediaActions {
     fun onVideoStarted()
     fun onVideoPause()
     fun onVideoStop()
+    fun isAdInProgress(): Boolean
 }
 
 interface ArtimediaListner {
@@ -165,7 +166,6 @@ object ArtimediaManager: ArtimediaActions {
     }
 
     fun init(playable: Playable, adsContainer: View, playerView: PlayerView, listner: ArtimediaListner) {
-       // relese()
 
         this.playable = playable
         this.adsContainer = adsContainer
@@ -228,6 +228,10 @@ object ArtimediaManager: ArtimediaActions {
         if ( !adInProgress) {
             artimediaApi?.updateVideoState(AMContentState.VIDEO_STATE_STOP)
         }
+    }
+
+    override fun isAdInProgress(): Boolean {
+        return adInProgress
     }
 
     private fun dismissTimer() {

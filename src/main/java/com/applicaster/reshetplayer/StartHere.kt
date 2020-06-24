@@ -121,19 +121,10 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
     override fun init(appContext: Context) {
         this.context = context
 
-        if (currentInline != null) {
-            currentInline?.stopInline()
-            currentInline?.removeInline(currentInline?.videoContainerView!!)
-        }
     }
 
     override fun init(playable: Playable, context: Context) {
         this.context = context
-
-        if (currentInline != null) {
-            currentInline?.stopInline()
-            currentInline?.removeInline(currentInline?.videoContainerView!!)
-        }
 
         this.mPlayableList = mutableListOf<Playable>(playable)
     }
@@ -141,10 +132,6 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
     override fun init(playableList: MutableList<Playable>, context: Context) {
         this.context = context
 
-        if (currentInline != null) {
-            currentInline?.stopInline()
-            currentInline?.removeInline(currentInline?.videoContainerView!!)
-        }
 
         this.mPlayableList = playableList
     }

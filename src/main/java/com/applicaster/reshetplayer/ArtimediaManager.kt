@@ -27,6 +27,7 @@ interface ArtimediaActions {
     fun onVideoPause()
     fun onVideoStop()
     fun isAdInProgress(): Boolean
+    fun onDestroy()
 }
 
 interface ArtimediaListner {
@@ -183,6 +184,8 @@ object ArtimediaManager: ArtimediaActions {
         artimediaApi = null
     }
 
+
+
     override fun resumeAd() {
         if(adInProgress) {
             artimediaApi?.resumeAd()
@@ -232,6 +235,11 @@ object ArtimediaManager: ArtimediaActions {
 
     override fun isAdInProgress(): Boolean {
         return adInProgress
+    }
+
+    override fun onDestroy() {
+        dismissTimer()
+        artimediaApi?.destroy()
     }
 
     private fun dismissTimer() {

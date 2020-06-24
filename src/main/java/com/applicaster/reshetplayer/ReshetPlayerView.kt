@@ -3,6 +3,7 @@ package com.applicaster.reshetplayer
 
 import android.content.Context
 import android.content.ContextWrapper
+import android.graphics.Rect
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,11 +15,12 @@ import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
 import androidx.viewpager.widget.ViewPager
 import com.applicaster.plugin_manager.playersmanager.Playable
-import com.applicaster.reactnative.presenter.ReactNativePresenter
 import com.applicaster.reshetplayer.defaultplayer.player.ReshetPlayerViewI
 import com.applicaster.reshetplayer.kantar.KANTAR_ATTRIBUTE_STREAM_KEY
 import com.applicaster.reshetplayer.kantar.kantarSensor
 import com.applicaster.reshetplayer.playercontroller.*
+import com.applicaster.util.OSUtil.getScreenHeight
+import com.applicaster.util.OSUtil.getScreenWidth
 import de.spring.mobile.Stream
 import java.util.*
 
@@ -78,11 +80,23 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     fun onResume() {
         Log.d(TAG, "activity onResume")
+        onResumeFromBackground()
+    }
+
+    fun onResumeFromBackground(){
+        if(isVisible(this) && isAttachedToWindow) {
+            ArtimediaManager.resumeAd()
+            if (!ArtimediaManager.isAdInProgress()) {
+                startVideo()
+            }
+        }
+    }
+
+    fun onResumeFromPageSelector(){
         ArtimediaManager.resumeAd()
-        if(!ArtimediaManager.isAdInProgress()) {
+        if (!ArtimediaManager.isAdInProgress()) {
             startVideo()
         }
-
     }
 
 
@@ -268,7 +282,20 @@ fun ViewPager.presentSinglePageListener(view: View, reshetPlayerView: ReshetPlay
         if (!horizontallyInPage(view, position)) {
             reshetPlayerView.onPause()
         } else {
-            reshetPlayerView.onResume()
+            reshetPlayerView.onResumeFromPageSelector()
         }
     }
+}
+
+fun isVisible(view: View?): Boolean {
+    if (view == null) {
+        return false
+    }
+//    if (!view.isShown) {
+//        return false
+//    }
+    val actualPosition = Rect()
+    view.getGlobalVisibleRect(actualPosition)
+    val screen = Rect(0, 0, getScreenWidth(view.context), getScreenHeight(view.context))
+    return actualPosition.intersect(screen)
 }

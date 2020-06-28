@@ -57,20 +57,8 @@ object ArtimediaManager: ArtimediaActions {
         this.playable = playable
         this.playerView = playerView
 
-        val artimediaSiteName = PluginParams.artimediaSiteName
-        val showAdsOnPayed = PluginParams.showAdsOnPayed
-
-        // prepare json object
-
-        // prepare json object
-        val params = JSONObject()
-        try {
-            params.put("siteKey", artimediaSiteName)
-            params.put("videoID", playable?.getPlayableId())
-            params.put("isLive", playable?.isLive() ?: false|| playable?.isDvr() ?: false)
-        } catch (e: JSONException) {
-            e.printStackTrace()
-        }
+        mAdInitialized = false
+        adInProgress = false
 
         val amEventListener = object: AMEventListener {
             override fun onAMSDKEvent(amEventType: AMEventType, o: Any?) {
@@ -240,6 +228,8 @@ object ArtimediaManager: ArtimediaActions {
     override fun onDestroy() {
         dismissTimer()
         artimediaApi?.destroy()
+        mAdInitialized = false
+        adInProgress = false
     }
 
     private fun dismissTimer() {

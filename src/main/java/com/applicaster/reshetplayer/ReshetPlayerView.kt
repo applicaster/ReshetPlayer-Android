@@ -114,12 +114,12 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
     fun onDestroy() {
         Log.d(TAG, "activity onDestroy")
         playerView.stopPlayback()
-       ArtimediaManager.relese()
+       ArtimediaManager.onDestroy()
     }
 
     fun startVideo() {
-        mCustomMediaController?.show()
         playerView.start()
+        mCustomMediaController?.show()
 
         ArtimediaManager.onVideoStarted()
 

@@ -6,7 +6,11 @@ import com.applicaster.reshetplayer.PluginParams
 import de.spring.mobile.StreamAdapter
 import de.spring.mobile.StreamAdapter.Meta
 
-class KantarPlayerAdapter (val player: Player) : StreamAdapter {
+interface VideoData {
+    fun getCurrentVideoData(): Long
+}
+
+class KantarPlayerAdapter (val videoData: VideoData) : StreamAdapter {
 
     override fun getMeta(): Meta = object: Meta {
 
@@ -22,7 +26,7 @@ class KantarPlayerAdapter (val player: Player) : StreamAdapter {
 
     override fun getDuration(): Int = 0
 
-    override fun getPosition(): Int = (player.videoViewWrapper.currentDate / 1000).toInt()
+    override fun getPosition(): Int = (videoData.getCurrentVideoData() / 1000).toInt()
 
     override fun getWidth(): Int = 0
 

@@ -17,6 +17,8 @@ import androidx.viewpager.widget.ViewPager
 import com.applicaster.plugin_manager.playersmanager.Playable
 import com.applicaster.reshetplayer.defaultplayer.player.ReshetPlayerViewI
 import com.applicaster.reshetplayer.kantar.KANTAR_ATTRIBUTE_STREAM_KEY
+import com.applicaster.reshetplayer.kantar.KantarPlayerAdapter
+import com.applicaster.reshetplayer.kantar.VideoData
 import com.applicaster.reshetplayer.kantar.kantarSensor
 import com.applicaster.reshetplayer.playercontroller.*
 import com.applicaster.util.OSUtil.getScreenHeight
@@ -25,7 +27,7 @@ import de.spring.mobile.Stream
 import java.util.*
 
 
-class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : RelativeLayout(context), LifecycleObserver {
+class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : RelativeLayout(context), LifecycleObserver, VideoData {
 
     companion object {
         const val TAG = "ReshetPlayerView"
@@ -144,7 +146,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         val atts: MutableMap<String, Any> = HashMap()
         atts[KANTAR_ATTRIBUTE_STREAM_KEY] = PluginParams.kantarAttributeStreamValue // mandatory
         if (kantarSensor != null) {
-           // stream = kantarSensor!!.track(KantarPlayerAdapter(this), atts)
+            stream = kantarSensor!!.track(KantarPlayerAdapter(this), atts)
         }
     }
 
@@ -154,6 +156,11 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
             stream = null
         }
     }
+
+    override fun getCurrentVideoDate(): Long {
+        return playerView.currentDate ?: 0L
+    }
+
 
     private fun getActivity(): AppCompatActivity? {
         var context = context
@@ -234,7 +241,6 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
             viewPager.addOnPageChangeListener(presentSinglePageListener)
         }
     }
-
 }
 
 fun View.removeFromParent(){

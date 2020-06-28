@@ -71,10 +71,6 @@ class StartHere : ApplicasterVideoPlayerContract(), ApplicationLoaderHookUpI, Fu
     }
 
     override fun onGoToFullscreen(currPosition: Int) {
-        if (currentInline != null) {
-            currentInline?.stopInline()
-            currentInline?.removeInline(currentInline?.videoContainerView!!)
-        }
         playInFullscreen(playableConfiguration, 0, videoContainerView!!.context)
     }
 

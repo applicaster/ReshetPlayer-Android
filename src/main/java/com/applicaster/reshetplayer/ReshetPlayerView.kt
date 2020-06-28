@@ -157,7 +157,7 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         }
     }
 
-    override fun getCurrentVideoData(): Long {
+    override fun getCurrentVideoDate(): Long {
         return playerView.currentDate ?: 0L
     }
 

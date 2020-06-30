@@ -33,19 +33,6 @@ class ReshetPlayerActivity: APBaseActivity() {
 
     protected var videoCurrentPosition = 0
 
-//    override fun onPause() {
-//        super.onPause()
-//        savePosition()
-//    }
-//
-//    override fun onResume() {
-//        super.onResume()
-//        if(videoCurrentPosition > 0 && applicasterVideoPlayerContract != null) {
-//            restorePosition()
-//            playerView.playerView.start()
-//        }
-//    }
-
 
     protected var castPlugin: CastPlugin? = null
 
@@ -61,16 +48,18 @@ class ReshetPlayerActivity: APBaseActivity() {
 
         playerViewContainer = findViewById(R.id.player_view_contianer)
 
-        val playableIndex = 0
-        //android 4.4 and below have bug, copy the arrat to playable [] will avoid crash.
-        val arrayDataObject = intent.getSerializableExtra(Player.PLAYABLE_KEY) as Array<Any>
-        val playableArray = Arrays.copyOf(arrayDataObject, arrayDataObject.size, Array<Playable>::class.java)
+        if(savedInstanceState == null) {
+            val playableIndex = 0
+            //android 4.4 and below have bug, copy the arrat to playable [] will avoid crash.
+            val arrayDataObject = intent.getSerializableExtra(Player.PLAYABLE_KEY) as Array<Any>
+            val playableArray = Arrays.copyOf(arrayDataObject, arrayDataObject.size, Array<Playable>::class.java)
 
-        playable = playableArray.get(playableIndex)
+            playable = playableArray.get(playableIndex)
 
-        getSecuredLink()
+            getSecuredLink()
 
-        if (isActivityRestored) {
+
+        } else {
             videoCurrentPosition = savedInstanceState!!.getInt(Player.SAVED_CURRENT_POSITION, 0)
         }
 

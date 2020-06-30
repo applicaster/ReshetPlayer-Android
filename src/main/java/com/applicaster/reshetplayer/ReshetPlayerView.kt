@@ -110,16 +110,21 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         pauseVideo()
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+    fun onStop() {
+        Log.d(TAG, "activity onStop")
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     fun onDestroy() {
-        Log.d(TAG, "activity onDestroy")
         playerView.stopPlayback()
+        Log.d(TAG, "activity onDestroy")
        ArtimediaManager.onDestroy()
     }
 
     fun startVideo() {
         playerView.start()
-        mCustomMediaController?.show()
+       // mCustomMediaController?.show()
 
         ArtimediaManager.onVideoStarted()
 
@@ -133,11 +138,6 @@ class ReshetPlayerView(context: Context, val playerView: ReshetPlayerViewI) : Re
         Log.d(TAG, "pausing video")
         ArtimediaManager.onVideoPause()
         stopKantarStream()
-    }
-
-    fun stopVideo() {
-        playerView.stopPlayback()
-        ArtimediaManager.onVideoStop()
     }
 
 

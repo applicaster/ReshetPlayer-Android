@@ -27,6 +27,7 @@ interface ArtimediaActions {
     fun onVideoPause()
     fun onVideoStop()
     fun isAdInProgress(): Boolean
+    fun onStop()
     fun onDestroy()
 }
 
@@ -225,8 +226,16 @@ object ArtimediaManager: ArtimediaActions {
         return adInProgress
     }
 
+    override fun onStop() {
+        Log.d(ReshetPlayerView.TAG, "stopping video")
+        if ( !adInProgress) {
+            artimediaApi?.updateVideoState(AMContentState.VIDEO_STATE_STOP)
+        }
+    }
+
     override fun onDestroy() {
         dismissTimer()
+        onStop()
         artimediaApi?.destroy()
         mAdInitialized = false
         adInProgress = false

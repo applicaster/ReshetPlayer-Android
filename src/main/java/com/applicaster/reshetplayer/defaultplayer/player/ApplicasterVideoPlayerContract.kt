@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import com.applicaster.plugin_manager.playersmanager.Playable
 import com.applicaster.plugin_manager.playersmanager.PlayableConfiguration
 import com.applicaster.plugin_manager.playersmanager.PlayerContract
+import com.applicaster.reshetplayer.ArtimediaManager
 import com.applicaster.reshetplayer.defaultplayer.player.wrapper.ReshetPlayerWrapper
 import com.applicaster.reshetplayer.playercontroller.FullscreenCallback
 import com.applicaster.reshetplayer.playercontroller.SetVolumeCallback
@@ -184,6 +185,8 @@ open class ApplicasterVideoPlayerContract: PlayerContract {
     }
 
     override fun removeInline(videoContainerView: ViewGroup) {
+        ArtimediaManager.onStop()
+        ArtimediaManager.onDestroy()
         playerWrapper.stopPlayback()
         videoContainerView.removeView(playerWrapper.playerView)
     }
